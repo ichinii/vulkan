@@ -372,6 +372,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 		"VK_LAYER_KHRONOS_validation"
 	};
 
+	std::cout << "choosing layers" << std::endl;
+	for (const auto& name : layers)
+		std::cout << "\t" << name << std::endl;
+
 	std::uint32_t extensionCount;
 	error << vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 	auto extensionProperties = std::vector<VkExtensionProperties>(extensionCount);
@@ -382,6 +386,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
 	// TODO: choose extensions
 	auto extensions = std::vector<const char*>() = {};
+
+	std::uint32_t glfwExtensionCount;
+	auto glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+	for (std::size_t i = 0; i < glfwExtensionCount; ++i)
+		extensions.push_back(glfwExtensions[i]);
+
+	std::cout << "choosing extensions" << std::endl;
+	for (const auto& name : extensions)
+		std::cout << "\t" << name << std::endl;
 
 	VkInstanceCreateInfo instanceInfo;
 	instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -395,6 +408,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
 	VkInstance instance;
 	error << vkCreateInstance(&instanceInfo, nullptr, &instance);
+
+	VkSurfaceKHR surface;
+	error << glfwCreateWindowSurface(instance, window, nullptr, &surface);
 
 	std::uint32_t physicalDeviceCount;
 	error << vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
@@ -447,6 +463,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	// destroy vulkan
 	vkDeviceWaitIdle(device);
 	vkDestroyDevice(device, nullptr);
+	vkDestroySurfaceKHR(instance, surface, nullptr);
 	vkDestroyInstance(instance, nullptr);
 	glfwDestroyWindow(window);
 	glfwTerminate();
