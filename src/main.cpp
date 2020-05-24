@@ -53,7 +53,7 @@ std::unordered_map<std::underlying_type_t<VkResult>, std::string> error_string {
 	{VK_ERROR_PIPELINE_COMPILE_REQUIRED_EXT,                "VK_ERROR_PIPELINE_COMPILE_REQUIRED_EXT"},
 };
 
-std::unordered_map<std::underlying_type_t<VkResult>, std::string> physical_device_type_name {
+std::unordered_map<std::underlying_type_t<VkPhysicalDeviceType>, std::string> physical_device_type_name {
 	{VK_PHYSICAL_DEVICE_TYPE_OTHER,          "VK_PHYSICAL_DEVICE_TYPE_OTHER"},
 	{VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU, "VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU"},
 	{VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU,   "VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU"},
