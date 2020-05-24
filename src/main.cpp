@@ -264,7 +264,7 @@ void dumpPhysicalDevice(const VkPhysicalDevice& device)
 {
 	VkPhysicalDeviceProperties properties;
 	vkGetPhysicalDeviceProperties(device, &properties);
-	std::cout << "device properties" << std::endl
+	std::cout << "physical device" << std::endl
 		<< "\tapi version: "
 			<< VK_VERSION_MAJOR(properties.apiVersion) << "."
 			<< VK_VERSION_MINOR(properties.apiVersion) << "."
@@ -309,13 +309,34 @@ void dumpPhysicalDevice(const VkPhysicalDevice& device)
 	for (std::size_t i = 0; i < familyCount; ++i) {
 		const auto& family = families[i];
 		std::cout << "\t\t#" << i << std::endl
-			<< "\t\tqueue count:                 " << family.queueCount << std::endl
-			<< "\t\tVK_QUEUE_GRAPHICS_BIT:       " << (0 != (VK_QUEUE_GRAPHICS_BIT & family.queueFlags)) << std::endl
-			<< "\t\tVK_QUEUE_COMPUTE_BIT:        " << (0 != (VK_QUEUE_COMPUTE_BIT & family.queueFlags)) << std::endl
-			<< "\t\tVK_QUEUE_TRANSFER_BIT:       " << (0 != (VK_QUEUE_TRANSFER_BIT & family.queueFlags)) << std::endl
-			<< "\t\tVK_QUEUE_SPARSE_BINDING_BIT: " << (0 != (VK_QUEUE_SPARSE_BINDING_BIT & family.queueFlags)) << std::endl
-			<< "\t\tVK_QUEUE_PROTECTED_BIT:      " << (0 != (VK_QUEUE_PROTECTED_BIT & family.queueFlags)) << std::endl;
+			<< "\t\tqueue count:                     " << family.queueCount << std::endl
+			<< "\t\ttimestamp valid bits:            " << family.timestampValidBits << std::endl
+			<< "\t\tmin image timestamp granularity: "
+				<< family.minImageTransferGranularity.width << ", "
+				<< family.minImageTransferGranularity.height << ", "
+				<< family.minImageTransferGranularity.depth << std::endl
+			<< "\t\tVK_QUEUE_GRAPHICS_BIT:           " << (0 != (VK_QUEUE_GRAPHICS_BIT & family.queueFlags)) << std::endl
+			<< "\t\tVK_QUEUE_COMPUTE_BIT:            " << (0 != (VK_QUEUE_COMPUTE_BIT & family.queueFlags)) << std::endl
+			<< "\t\tVK_QUEUE_TRANSFER_BIT:           " << (0 != (VK_QUEUE_TRANSFER_BIT & family.queueFlags)) << std::endl
+			<< "\t\tVK_QUEUE_SPARSE_BINDING_BIT:     " << (0 != (VK_QUEUE_SPARSE_BINDING_BIT & family.queueFlags)) << std::endl
+			<< "\t\tVK_QUEUE_PROTECTED_BIT:          " << (0 != (VK_QUEUE_PROTECTED_BIT & family.queueFlags)) << std::endl;
 	}
+}
+
+void dumpLayer(const VkLayerProperties &layer)
+{
+	std::cout << "layer" << std::endl
+		<< "\tname:                   " << layer.layerName << std::endl
+		<< "\tspecification version:  " << layer.specVersion << std::endl
+		<< "\timplementation version: " << layer.implementationVersion << std::endl
+		<< "\tdescription:            " << layer.description << std::endl;
+}
+
+void dumpExtension(const VkExtensionProperties &extension)
+{
+	std::cout << "extension" << std::endl
+		<< "\tname:                  " << extension.extensionName << std::endl
+		<< "\tspecification version: " << extension.specVersion << std::endl;
 }
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
@@ -331,15 +352,39 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
   appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 0);
   appInfo.apiVersion = VK_VERSION_1_0;
 
+	std::uint32_t layerCount;
+	error << vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+	auto layerProperties = std::vector<VkLayerProperties>(layerCount);
+	error << vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
+	std::cout << "layer count: " << layerCount << std::endl;
+	for (const auto& layer : layerProperties)
+		dumpLayer(layer);
+
+	// TODO: choose layers nicely. maybe eliminate unavailable layers
+	auto layers = std::vector<const char*>() = {
+		"VK_LAYER_KHRONOS_validation"
+	};
+
+	std::uint32_t extensionCount;
+	error << vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+	auto extensionProperties = std::vector<VkExtensionProperties>(extensionCount);
+	error << vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensionProperties.data());
+	std::cout << "extension count: " << extensionCount << std::endl;
+	for (const auto& extension : extensionProperties)
+		dumpExtension(extension);
+
+	// TODO: choose extensions
+	auto extensions = std::vector<const char*>() = {};
+
 	VkInstanceCreateInfo instanceInfo;
 	instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	instanceInfo.pNext = nullptr;
 	instanceInfo.flags = 0;
 	instanceInfo.pApplicationInfo = &appInfo;
-	instanceInfo.enabledLayerCount = 0;
-	instanceInfo.ppEnabledLayerNames = nullptr;
-	instanceInfo.enabledExtensionCount = 0;
-	instanceInfo.ppEnabledExtensionNames = nullptr;
+	instanceInfo.enabledLayerCount = layers.size();
+	instanceInfo.ppEnabledLayerNames = layers.data();
+	instanceInfo.enabledExtensionCount = extensions.size();
+	instanceInfo.ppEnabledExtensionNames = extensions.data();
 
 	VkInstance instance;
 	error << vkCreateInstance(&instanceInfo, nullptr, &instance);
@@ -351,6 +396,36 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
 	for (const auto& device : physicalDevices)
 		dumpPhysicalDevice(device);
+
+	VkDeviceQueueCreateInfo queueInfo;
+	queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	queueInfo.pNext = nullptr;
+  queueInfo.flags = 0;
+  queueInfo.queueFamilyIndex = 0; // TODO: choose best family
+  queueInfo.queueCount = 1; // TODO: check if amount is available
+	auto queuePriorities = std::vector<float> {1.f};
+  queueInfo.pQueuePriorities = queuePriorities.data();
+
+	VkPhysicalDeviceFeatures features = {};
+
+	VkDeviceCreateInfo deviceInfo;
+	deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+  deviceInfo.pNext = nullptr;
+  deviceInfo.flags = 0;
+  deviceInfo.queueCreateInfoCount = 1;
+  deviceInfo.pQueueCreateInfos = &queueInfo;
+  deviceInfo.enabledLayerCount = 0;
+  deviceInfo.ppEnabledLayerNames = nullptr;
+  deviceInfo.enabledExtensionCount = 0;
+  deviceInfo.ppEnabledExtensionNames = nullptr;
+  deviceInfo.pEnabledFeatures = &features;
+	
+	auto physicalDevice = physicalDevices[0]; // TODO: choose best device
+
+	VkDevice device;
+	error << vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &device);
+
+	
 
 	std::cout << "hello vulkan" << std::endl;
 	return 0;
