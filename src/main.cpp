@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
-#include <vulkan/vulkan.h>
-// #include <vulkan/vulkan_intel.h>
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
 using namespace std::string_literals;
 using namespace std::chrono_literals;
@@ -343,6 +343,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
 	std::cout << std::boolalpha;
 
+	assert(glfwInit() == GLFW_TRUE);
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	GLFWwindow* window = glfwCreateWindow(1280, 720, "Vulkan", nullptr, nullptr);
+	glfwMakeContextCurrent(window);
+
 	VkApplicationInfo appInfo;
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   appInfo.pNext = nullptr;
@@ -425,8 +432,24 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	VkDevice device;
 	error << vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &device);
 
-	
+	VkQueue queue;
+	vkGetDeviceQueue(device, 0, 0, &queue);
 
+	while (!glfwWindowShouldClose(window)) {
+		glfwPollEvents();
+		if (glfwGetKey(window, GLFW_KEY_Q))
+			glfwSetWindowShouldClose(window, true);
+	}
+
+	// we initialzed vulkan (yay)
 	std::cout << "hello vulkan" << std::endl;
+
+	// destroy vulkan
+	vkDeviceWaitIdle(device);
+	vkDestroyDevice(device, nullptr);
+	vkDestroyInstance(instance, nullptr);
+	glfwDestroyWindow(window);
+	glfwTerminate();
+
 	return 0;
 }

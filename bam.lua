@@ -9,6 +9,7 @@ AddTool(function(s)
 	s.cc.flags_cxx:Add("--std=c++17")
 	s.cc.includes:Add(src_dir)
 	s.link.libs:Add("vulkan")
+	s.link.libs:Add("glfw")
 
 	s.cc.Output = function(s, input)
 		input = input:gsub("^"..src_dir.."/", "")
