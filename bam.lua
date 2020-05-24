@@ -25,9 +25,9 @@ s = NewSettings()
 src = CollectRecursive(PathJoin(src_dir, "*.cpp"))
 obj = Compile(s, src)
 bin = Link(s, "bin", obj)
-PseudoTarget("compile", bin)
 PseudoTarget("c", bin)
 
 AddJob("r", "running '"..bin.."'...", "./"..bin)
 AddDependency("r", bin)
-DefaultTarget("r")
+
+DefaultTarget("c")

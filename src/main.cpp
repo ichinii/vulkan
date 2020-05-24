@@ -78,186 +78,186 @@ struct {                                                                        
 void dumpPhysicalDeviceLimit(const VkPhysicalDeviceLimits& limits)
 {
 	std::cout << "\tlimits" << std::endl
-		<< "\t\tmaxImageDimension1D: "                             << limits.maxImageDimension1D << std::endl
-		<< "\t\tmaxImageDimension2D: "                             << limits.maxImageDimension2D << std::endl
-		<< "\t\tmaxImageDimension3D: "                             << limits.maxImageDimension3D << std::endl
-		<< "\t\tmaxImageDimensionCube: "                           << limits.maxImageDimensionCube << std::endl
-		<< "\t\tmaxImageArrayLayers: "                             << limits.maxImageArrayLayers << std::endl
-		<< "\t\tmaxTexelBufferElements: "                          << limits.maxTexelBufferElements << std::endl
-		<< "\t\tmaxUniformBufferRange: "                           << limits.maxUniformBufferRange << std::endl
-		<< "\t\tmaxStorageBufferRange: "                           << limits.maxStorageBufferRange << std::endl
-		<< "\t\tmaxPushConstantsSize: "                            << limits.maxPushConstantsSize << std::endl
-		<< "\t\tmaxMemoryAllocationCount: "                        << limits.maxMemoryAllocationCount << std::endl
-		<< "\t\tmaxSamplerAllocationCount: "                       << limits.maxSamplerAllocationCount << std::endl
-		<< "\t\tbufferImageGranularity: "                          << limits.bufferImageGranularity << std::endl
-		<< "\t\tsparseAddressSpaceSize: "                          << limits.sparseAddressSpaceSize << std::endl
-		<< "\t\tmaxBoundDescriptorSets: "                          << limits.maxBoundDescriptorSets << std::endl
-		<< "\t\tmaxPerStageDescriptorSamplers: "                   << limits.maxPerStageDescriptorSamplers << std::endl
-		<< "\t\tmaxPerStageDescriptorUniformBuffers: "             << limits.maxPerStageDescriptorUniformBuffers << std::endl
-		<< "\t\tmaxPerStageDescriptorStorageBuffers: "             << limits.maxPerStageDescriptorStorageBuffers << std::endl
-		<< "\t\tmaxPerStageDescriptorSampledImages: "              << limits.maxPerStageDescriptorSampledImages << std::endl
-		<< "\t\tmaxPerStageDescriptorStorageImages: "              << limits.maxPerStageDescriptorStorageImages << std::endl
-		<< "\t\tmaxPerStageDescriptorInputAttachments: "           << limits.maxPerStageDescriptorInputAttachments << std::endl
-		<< "\t\tmaxPerStageResources: "                            << limits.maxPerStageResources << std::endl
-		<< "\t\tmaxDescriptorSetSamplers: "                        << limits.maxDescriptorSetSamplers << std::endl
-		<< "\t\tmaxDescriptorSetUniformBuffers: "                  << limits.maxDescriptorSetUniformBuffers << std::endl
-		<< "\t\tmaxDescriptorSetUniformBuffersDynamic: "           << limits.maxDescriptorSetUniformBuffersDynamic << std::endl
-		<< "\t\tmaxDescriptorSetStorageBuffers: "                  << limits.maxDescriptorSetStorageBuffers << std::endl
-		<< "\t\tmaxDescriptorSetStorageBuffersDynamic: "           << limits.maxDescriptorSetStorageBuffersDynamic << std::endl
-		<< "\t\tmaxDescriptorSetSampledImages: "                   << limits.maxDescriptorSetSampledImages << std::endl
-		<< "\t\tmaxDescriptorSetStorageImages: "                   << limits.maxDescriptorSetStorageImages << std::endl
-		<< "\t\tmaxDescriptorSetInputAttachments: "                << limits.maxDescriptorSetInputAttachments << std::endl
-		<< "\t\tmaxVertexInputAttributes: "                        << limits.maxVertexInputAttributes << std::endl
-		<< "\t\tmaxVertexInputBindings: "                          << limits.maxVertexInputBindings << std::endl
-		<< "\t\tmaxVertexInputAttributeOffset: "                   << limits.maxVertexInputAttributeOffset << std::endl
-		<< "\t\tmaxVertexInputBindingStride: "                     << limits.maxVertexInputBindingStride << std::endl
-		<< "\t\tmaxVertexOutputComponents: "                       << limits.maxVertexOutputComponents << std::endl
-		<< "\t\tmaxTessellationGenerationLevel: "                  << limits.maxTessellationGenerationLevel << std::endl
-		<< "\t\tmaxTessellationPatchSize: "                        << limits.maxTessellationPatchSize << std::endl
-		<< "\t\tmaxTessellationControlPerVertexInputComponents: "  << limits.maxTessellationControlPerVertexInputComponents << std::endl
+		<< "\t\tmaxImageDimension1D:                             " << limits.maxImageDimension1D << std::endl
+		<< "\t\tmaxImageDimension2D:                             " << limits.maxImageDimension2D << std::endl
+		<< "\t\tmaxImageDimension3D:                             " << limits.maxImageDimension3D << std::endl
+		<< "\t\tmaxImageDimensionCube:                           " << limits.maxImageDimensionCube << std::endl
+		<< "\t\tmaxImageArrayLayers:                             " << limits.maxImageArrayLayers << std::endl
+		<< "\t\tmaxTexelBufferElements:                          " << limits.maxTexelBufferElements << std::endl
+		<< "\t\tmaxUniformBufferRange:                           " << limits.maxUniformBufferRange << std::endl
+		<< "\t\tmaxStorageBufferRange:                           " << limits.maxStorageBufferRange << std::endl
+		<< "\t\tmaxPushConstantsSize:                            " << limits.maxPushConstantsSize << std::endl
+		<< "\t\tmaxMemoryAllocationCount:                        " << limits.maxMemoryAllocationCount << std::endl
+		<< "\t\tmaxSamplerAllocationCount:                       " << limits.maxSamplerAllocationCount << std::endl
+		<< "\t\tbufferImageGranularity:                          " << limits.bufferImageGranularity << std::endl
+		<< "\t\tsparseAddressSpaceSize:                          " << limits.sparseAddressSpaceSize << std::endl
+		<< "\t\tmaxBoundDescriptorSets:                          " << limits.maxBoundDescriptorSets << std::endl
+		<< "\t\tmaxPerStageDescriptorSamplers:                   " << limits.maxPerStageDescriptorSamplers << std::endl
+		<< "\t\tmaxPerStageDescriptorUniformBuffers:             " << limits.maxPerStageDescriptorUniformBuffers << std::endl
+		<< "\t\tmaxPerStageDescriptorStorageBuffers:             " << limits.maxPerStageDescriptorStorageBuffers << std::endl
+		<< "\t\tmaxPerStageDescriptorSampledImages:              " << limits.maxPerStageDescriptorSampledImages << std::endl
+		<< "\t\tmaxPerStageDescriptorStorageImages:              " << limits.maxPerStageDescriptorStorageImages << std::endl
+		<< "\t\tmaxPerStageDescriptorInputAttachments:           " << limits.maxPerStageDescriptorInputAttachments << std::endl
+		<< "\t\tmaxPerStageResources:                            " << limits.maxPerStageResources << std::endl
+		<< "\t\tmaxDescriptorSetSamplers:                        " << limits.maxDescriptorSetSamplers << std::endl
+		<< "\t\tmaxDescriptorSetUniformBuffers:                  " << limits.maxDescriptorSetUniformBuffers << std::endl
+		<< "\t\tmaxDescriptorSetUniformBuffersDynamic:           " << limits.maxDescriptorSetUniformBuffersDynamic << std::endl
+		<< "\t\tmaxDescriptorSetStorageBuffers:                  " << limits.maxDescriptorSetStorageBuffers << std::endl
+		<< "\t\tmaxDescriptorSetStorageBuffersDynamic:           " << limits.maxDescriptorSetStorageBuffersDynamic << std::endl
+		<< "\t\tmaxDescriptorSetSampledImages:                   " << limits.maxDescriptorSetSampledImages << std::endl
+		<< "\t\tmaxDescriptorSetStorageImages:                   " << limits.maxDescriptorSetStorageImages << std::endl
+		<< "\t\tmaxDescriptorSetInputAttachments:                " << limits.maxDescriptorSetInputAttachments << std::endl
+		<< "\t\tmaxVertexInputAttributes:                        " << limits.maxVertexInputAttributes << std::endl
+		<< "\t\tmaxVertexInputBindings:                          " << limits.maxVertexInputBindings << std::endl
+		<< "\t\tmaxVertexInputAttributeOffset:                   " << limits.maxVertexInputAttributeOffset << std::endl
+		<< "\t\tmaxVertexInputBindingStride:                     " << limits.maxVertexInputBindingStride << std::endl
+		<< "\t\tmaxVertexOutputComponents:                       " << limits.maxVertexOutputComponents << std::endl
+		<< "\t\tmaxTessellationGenerationLevel:                  " << limits.maxTessellationGenerationLevel << std::endl
+		<< "\t\tmaxTessellationPatchSize:                        " << limits.maxTessellationPatchSize << std::endl
+		<< "\t\tmaxTessellationControlPerVertexInputComponents:  " << limits.maxTessellationControlPerVertexInputComponents << std::endl
 		<< "\t\tmaxTessellationControlPerVertexOutputComponents: " << limits.maxTessellationControlPerVertexOutputComponents << std::endl
-		<< "\t\tmaxTessellationControlPerPatchOutputComponents: "  << limits.maxTessellationControlPerPatchOutputComponents << std::endl
-		<< "\t\tmaxTessellationControlTotalOutputComponents: "     << limits.maxTessellationControlTotalOutputComponents << std::endl
-		<< "\t\tmaxTessellationEvaluationInputComponents: "        << limits.maxTessellationEvaluationInputComponents << std::endl
-		<< "\t\tmaxTessellationEvaluationOutputComponents: "       << limits.maxTessellationEvaluationOutputComponents << std::endl
-		<< "\t\tmaxGeometryShaderInvocations: "                    << limits.maxGeometryShaderInvocations << std::endl
-		<< "\t\tmaxGeometryInputComponents: "                      << limits.maxGeometryInputComponents << std::endl
-		<< "\t\tmaxGeometryOutputComponents: "                     << limits.maxGeometryOutputComponents << std::endl
-		<< "\t\tmaxGeometryOutputVertices: "                       << limits.maxGeometryOutputVertices << std::endl
-		<< "\t\tmaxGeometryTotalOutputComponents: "                << limits.maxGeometryTotalOutputComponents << std::endl
-		<< "\t\tmaxFragmentInputComponents: "                      << limits.maxFragmentInputComponents << std::endl
-		<< "\t\tmaxFragmentOutputAttachments: "                    << limits.maxFragmentOutputAttachments << std::endl
-		<< "\t\tmaxFragmentDualSrcAttachments: "                   << limits.maxFragmentDualSrcAttachments << std::endl
-		<< "\t\tmaxFragmentCombinedOutputResources: "              << limits.maxFragmentCombinedOutputResources << std::endl
-		<< "\t\tmaxComputeSharedMemorySize: "                      << limits.maxComputeSharedMemorySize << std::endl
-		<< "\t\tmaxComputeWorkGroupCount[3]: "
+		<< "\t\tmaxTessellationControlPerPatchOutputComponents:  " << limits.maxTessellationControlPerPatchOutputComponents << std::endl
+		<< "\t\tmaxTessellationControlTotalOutputComponents:     " << limits.maxTessellationControlTotalOutputComponents << std::endl
+		<< "\t\tmaxTessellationEvaluationInputComponents:        " << limits.maxTessellationEvaluationInputComponents << std::endl
+		<< "\t\tmaxTessellationEvaluationOutputComponents:       " << limits.maxTessellationEvaluationOutputComponents << std::endl
+		<< "\t\tmaxGeometryShaderInvocations:                    " << limits.maxGeometryShaderInvocations << std::endl
+		<< "\t\tmaxGeometryInputComponents:                      " << limits.maxGeometryInputComponents << std::endl
+		<< "\t\tmaxGeometryOutputComponents:                     " << limits.maxGeometryOutputComponents << std::endl
+		<< "\t\tmaxGeometryOutputVertices:                       " << limits.maxGeometryOutputVertices << std::endl
+		<< "\t\tmaxGeometryTotalOutputComponents:                " << limits.maxGeometryTotalOutputComponents << std::endl
+		<< "\t\tmaxFragmentInputComponents:                      " << limits.maxFragmentInputComponents << std::endl
+		<< "\t\tmaxFragmentOutputAttachments:                    " << limits.maxFragmentOutputAttachments << std::endl
+		<< "\t\tmaxFragmentDualSrcAttachments:                   " << limits.maxFragmentDualSrcAttachments << std::endl
+		<< "\t\tmaxFragmentCombinedOutputResources:              " << limits.maxFragmentCombinedOutputResources << std::endl
+		<< "\t\tmaxComputeSharedMemorySize:                      " << limits.maxComputeSharedMemorySize << std::endl
+		<< "\t\tmaxComputeWorkGroupCount[3]:                     " 
 			<< limits.maxComputeWorkGroupCount[0] << ", "
 			<< limits.maxComputeWorkGroupCount[1] << ", "
 			<< limits.maxComputeWorkGroupCount[2] << std::endl
-		<< "\t\tmaxComputeWorkGroupInvocations: "                  << limits.maxComputeWorkGroupInvocations << std::endl
-		<< "\t\tmaxComputeWorkGroupSize[3]: "
+		<< "\t\tmaxComputeWorkGroupInvocations:                  " << limits.maxComputeWorkGroupInvocations << std::endl
+		<< "\t\tmaxComputeWorkGroupSize[3]:                      "
 			<< limits.maxComputeWorkGroupSize[0] << ", "
 			<< limits.maxComputeWorkGroupSize[1] << ", "
 			<< limits.maxComputeWorkGroupSize[2] << std::endl
-		<< "\t\tsubPixelPrecisionBits: "                           << limits.subPixelPrecisionBits << std::endl
-		<< "\t\tsubTexelPrecisionBits: "                           << limits.subTexelPrecisionBits << std::endl
-		<< "\t\tmipmapPrecisionBits: "                             << limits.mipmapPrecisionBits << std::endl
-		<< "\t\tmaxDrawIndexedIndexValue: "                        << limits.maxDrawIndexedIndexValue << std::endl
-		<< "\t\tmaxDrawIndirectCount: "                            << limits.maxDrawIndirectCount << std::endl
-		<< "\t\tmaxSamplerLodBias: "                               << limits.maxSamplerLodBias << std::endl
-		<< "\t\tmaxSamplerAnisotropy: "                            << limits.maxSamplerAnisotropy << std::endl
-		<< "\t\tmaxViewports: "                                    << limits.maxViewports << std::endl
-		<< "\t\tmaxViewportDimensions[2]: "
+		<< "\t\tsubPixelPrecisionBits:                           " << limits.subPixelPrecisionBits << std::endl
+		<< "\t\tsubTexelPrecisionBits:                           " << limits.subTexelPrecisionBits << std::endl
+		<< "\t\tmipmapPrecisionBits:                             " << limits.mipmapPrecisionBits << std::endl
+		<< "\t\tmaxDrawIndexedIndexValue:                        " << limits.maxDrawIndexedIndexValue << std::endl
+		<< "\t\tmaxDrawIndirectCount:                            " << limits.maxDrawIndirectCount << std::endl
+		<< "\t\tmaxSamplerLodBias:                               " << limits.maxSamplerLodBias << std::endl
+		<< "\t\tmaxSamplerAnisotropy:                            " << limits.maxSamplerAnisotropy << std::endl
+		<< "\t\tmaxViewports:                                    " << limits.maxViewports << std::endl
+		<< "\t\tmaxViewportDimensions[2]:                        " 
 			<< limits.maxViewportDimensions[0] << ", "
 			<< limits.maxViewportDimensions[1] << std::endl
-		<< "\t\tviewportBoundsRange[2]: "
+		<< "\t\tviewportBoundsRange[2]:                          " 
 			<< limits.viewportBoundsRange[0] << ", "
 			<< limits.viewportBoundsRange[1] << std::endl
-		<< "\t\tviewportSubPixelBits: "                            << limits.viewportSubPixelBits << std::endl
-		<< "\t\tminMemoryMapAlignment: "                           << limits.minMemoryMapAlignment << std::endl
-		<< "\t\tminTexelBufferOffsetAlignment: "                   << limits.minTexelBufferOffsetAlignment << std::endl
-		<< "\t\tminUniformBufferOffsetAlignment: "                 << limits.minUniformBufferOffsetAlignment << std::endl
-		<< "\t\tminStorageBufferOffsetAlignment: "                 << limits.minStorageBufferOffsetAlignment << std::endl
-		<< "\t\tminTexelOffset: "                                  << limits.minTexelOffset << std::endl
-		<< "\t\tmaxTexelOffset: "                                  << limits.maxTexelOffset << std::endl
-		<< "\t\tminTexelGatherOffset: "                            << limits.minTexelGatherOffset << std::endl
-		<< "\t\tmaxTexelGatherOffset: "                            << limits.maxTexelGatherOffset << std::endl
-		<< "\t\tminInterpolationOffset: "                          << limits.minInterpolationOffset << std::endl
-		<< "\t\tmaxInterpolationOffset: "                          << limits.maxInterpolationOffset << std::endl
-		<< "\t\tsubPixelInterpolationOffsetBits: "                 << limits.subPixelInterpolationOffsetBits << std::endl
-		<< "\t\tmaxFramebufferWidth: "                             << limits.maxFramebufferWidth << std::endl
-		<< "\t\tmaxFramebufferHeight: "                            << limits.maxFramebufferHeight << std::endl
-		<< "\t\tmaxFramebufferLayers: "                            << limits.maxFramebufferLayers << std::endl
-		<< "\t\tframebufferColorSampleCounts: "                    << limits.framebufferColorSampleCounts << std::endl
-		<< "\t\tframebufferDepthSampleCounts: "                    << limits.framebufferDepthSampleCounts << std::endl
-		<< "\t\tframebufferStencilSampleCounts: "                  << limits.framebufferStencilSampleCounts << std::endl
-		<< "\t\tframebufferNoAttachmentsSampleCounts: "            << limits.framebufferNoAttachmentsSampleCounts << std::endl
-		<< "\t\tmaxColorAttachments: "                             << limits.maxColorAttachments << std::endl
-		<< "\t\tsampledImageColorSampleCounts: "                   << limits.sampledImageColorSampleCounts << std::endl
-		<< "\t\tsampledImageIntegerSampleCounts: "                 << limits.sampledImageIntegerSampleCounts << std::endl
-		<< "\t\tsampledImageDepthSampleCounts: "                   << limits.sampledImageDepthSampleCounts << std::endl
-		<< "\t\tsampledImageStencilSampleCounts: "                 << limits.sampledImageStencilSampleCounts << std::endl
-		<< "\t\tstorageImageSampleCounts: "                        << limits.storageImageSampleCounts << std::endl
-		<< "\t\tmaxSampleMaskWords: "                              << limits.maxSampleMaskWords << std::endl
-		<< "\t\ttimestampComputeAndGraphics: "                     << limits.timestampComputeAndGraphics << std::endl
-		<< "\t\ttimestampPeriod: "                                 << limits.timestampPeriod << std::endl
-		<< "\t\tmaxClipDistances: "                                << limits.maxClipDistances << std::endl
-		<< "\t\tmaxCullDistances: "                                << limits.maxCullDistances << std::endl
-		<< "\t\tmaxCombinedClipAndCullDistances: "                 << limits.maxCombinedClipAndCullDistances << std::endl
-		<< "\t\tdiscreteQueuePriorities: "                         << limits.discreteQueuePriorities << std::endl
-		<< "\t\tpointSizeRange[2]: "
+		<< "\t\tviewportSubPixelBits:                            " << limits.viewportSubPixelBits << std::endl
+		<< "\t\tminMemoryMapAlignment:                           " << limits.minMemoryMapAlignment << std::endl
+		<< "\t\tminTexelBufferOffsetAlignment:                   " << limits.minTexelBufferOffsetAlignment << std::endl
+		<< "\t\tminUniformBufferOffsetAlignment:                 " << limits.minUniformBufferOffsetAlignment << std::endl
+		<< "\t\tminStorageBufferOffsetAlignment:                 " << limits.minStorageBufferOffsetAlignment << std::endl
+		<< "\t\tminTexelOffset:                                  " << limits.minTexelOffset << std::endl
+		<< "\t\tmaxTexelOffset:                                  " << limits.maxTexelOffset << std::endl
+		<< "\t\tminTexelGatherOffset:                            " << limits.minTexelGatherOffset << std::endl
+		<< "\t\tmaxTexelGatherOffset:                            " << limits.maxTexelGatherOffset << std::endl
+		<< "\t\tminInterpolationOffset:                          " << limits.minInterpolationOffset << std::endl
+		<< "\t\tmaxInterpolationOffset:                          " << limits.maxInterpolationOffset << std::endl
+		<< "\t\tsubPixelInterpolationOffsetBits:                 " << limits.subPixelInterpolationOffsetBits << std::endl
+		<< "\t\tmaxFramebufferWidth:                             " << limits.maxFramebufferWidth << std::endl
+		<< "\t\tmaxFramebufferHeight:                            " << limits.maxFramebufferHeight << std::endl
+		<< "\t\tmaxFramebufferLayers:                            " << limits.maxFramebufferLayers << std::endl
+		<< "\t\tframebufferColorSampleCounts:                    " << limits.framebufferColorSampleCounts << std::endl
+		<< "\t\tframebufferDepthSampleCounts:                    " << limits.framebufferDepthSampleCounts << std::endl
+		<< "\t\tframebufferStencilSampleCounts:                  " << limits.framebufferStencilSampleCounts << std::endl
+		<< "\t\tframebufferNoAttachmentsSampleCounts:            " << limits.framebufferNoAttachmentsSampleCounts << std::endl
+		<< "\t\tmaxColorAttachments:                             " << limits.maxColorAttachments << std::endl
+		<< "\t\tsampledImageColorSampleCounts:                   " << limits.sampledImageColorSampleCounts << std::endl
+		<< "\t\tsampledImageIntegerSampleCounts:                 " << limits.sampledImageIntegerSampleCounts << std::endl
+		<< "\t\tsampledImageDepthSampleCounts:                   " << limits.sampledImageDepthSampleCounts << std::endl
+		<< "\t\tsampledImageStencilSampleCounts:                 " << limits.sampledImageStencilSampleCounts << std::endl
+		<< "\t\tstorageImageSampleCounts:                        " << limits.storageImageSampleCounts << std::endl
+		<< "\t\tmaxSampleMaskWords:                              " << limits.maxSampleMaskWords << std::endl
+		<< "\t\ttimestampComputeAndGraphics:                     " << limits.timestampComputeAndGraphics << std::endl
+		<< "\t\ttimestampPeriod:                                 " << limits.timestampPeriod << std::endl
+		<< "\t\tmaxClipDistances:                                " << limits.maxClipDistances << std::endl
+		<< "\t\tmaxCullDistances:                                " << limits.maxCullDistances << std::endl
+		<< "\t\tmaxCombinedClipAndCullDistances:                 " << limits.maxCombinedClipAndCullDistances << std::endl
+		<< "\t\tdiscreteQueuePriorities:                         " << limits.discreteQueuePriorities << std::endl
+		<< "\t\tpointSizeRange[2]:                               " 
 			<< limits.pointSizeRange[0] << ", "
 			<< limits.pointSizeRange[1] << std::endl
-		<< "\t\tlineWidthRange[2]: "
+		<< "\t\tlineWidthRange[2]:                               " 
 			<< limits.lineWidthRange[0] << ", "
 			<< limits.lineWidthRange[0] << std::endl
-		<< "\t\tpointSizeGranularity: "                            << limits.pointSizeGranularity << std::endl
-		<< "\t\tlineWidthGranularity: "                            << limits.lineWidthGranularity << std::endl
-		<< "\t\tstrictLines: "                                     << limits.strictLines << std::endl
-		<< "\t\tstandardSampleLocations: "                         << limits.standardSampleLocations << std::endl
-		<< "\t\toptimalBufferCopyOffsetAlignment: "                << limits.optimalBufferCopyOffsetAlignment << std::endl
-		<< "\t\toptimalBufferCopyRowPitchAlignment: "              << limits.optimalBufferCopyRowPitchAlignment << std::endl
-		<< "\t\tnonCoherentAtomSize: "                             << limits.nonCoherentAtomSize << std::endl;
+		<< "\t\tpointSizeGranularity:                            " << limits.pointSizeGranularity << std::endl
+		<< "\t\tlineWidthGranularity:                            " << limits.lineWidthGranularity << std::endl
+		<< "\t\tstrictLines:                                     " << limits.strictLines << std::endl
+		<< "\t\tstandardSampleLocations:                         " << limits.standardSampleLocations << std::endl
+		<< "\t\toptimalBufferCopyOffsetAlignment:                " << limits.optimalBufferCopyOffsetAlignment << std::endl
+		<< "\t\toptimalBufferCopyRowPitchAlignment:              " << limits.optimalBufferCopyRowPitchAlignment << std::endl
+		<< "\t\tnonCoherentAtomSize:                             " << limits.nonCoherentAtomSize << std::endl;
 }
 
 void dumpPhysicalDeviceFeatures(const VkPhysicalDeviceFeatures& features)
 {
 	std::cout << "\tfeatures" << std::endl
-		<< "\t\trobustBufferAccess: "                      << features.robustBufferAccess << std::endl
-		<< "\t\tfullDrawIndexUint32: "                     << features.fullDrawIndexUint32 << std::endl
-		<< "\t\timageCubeArray: "                          << features.imageCubeArray << std::endl
-		<< "\t\tindependentBlend: "                        << features.independentBlend << std::endl
-		<< "\t\tgeometryShader: "                          << features.geometryShader << std::endl
-		<< "\t\ttessellationShader: "                      << features.tessellationShader << std::endl
-		<< "\t\tsampleRateShading: "                       << features.sampleRateShading << std::endl
-		<< "\t\tdualSrcBlend: "                            << features.dualSrcBlend << std::endl
-		<< "\t\tlogicOp: "                                 << features.logicOp << std::endl
-		<< "\t\tmultiDrawIndirect: "                       << features.multiDrawIndirect << std::endl
-		<< "\t\tdrawIndirectFirstInstance: "               << features.drawIndirectFirstInstance << std::endl
-		<< "\t\tdepthClamp: "                              << features.depthClamp << std::endl
-		<< "\t\tdepthBiasClamp: "                          << features.depthBiasClamp << std::endl
-		<< "\t\tfillModeNonSolid: "                        << features.fillModeNonSolid << std::endl
-		<< "\t\tdepthBounds: "                             << features.depthBounds << std::endl
-		<< "\t\twideLines: "                               << features.wideLines << std::endl
-		<< "\t\tlargePoints: "                             << features.largePoints << std::endl
-		<< "\t\talphaToOne: "                              << features.alphaToOne << std::endl
-		<< "\t\tmultiViewport: "                           << features.multiViewport << std::endl
-		<< "\t\tsamplerAnisotropy: "                       << features.samplerAnisotropy << std::endl
-		<< "\t\ttextureCompressionETC2: "                  << features.textureCompressionETC2 << std::endl
-		<< "\t\ttextureCompressionASTC_LDR: "              << features.textureCompressionASTC_LDR << std::endl
-		<< "\t\ttextureCompressionBC: "                    << features.textureCompressionBC << std::endl
-		<< "\t\tocclusionQueryPrecise: "                   << features.occlusionQueryPrecise << std::endl
-		<< "\t\tpipelineStatisticsQuery: "                 << features.pipelineStatisticsQuery << std::endl
-		<< "\t\tvertexPipelineStoresAndAtomics: "          << features.vertexPipelineStoresAndAtomics << std::endl
-		<< "\t\tfragmentStoresAndAtomics: "                << features.fragmentStoresAndAtomics << std::endl
-		<< "\t\tshaderTessellationAndGeometryPointSize: "  << features.shaderTessellationAndGeometryPointSize << std::endl
-		<< "\t\tshaderImageGatherExtended: "               << features.shaderImageGatherExtended << std::endl
-		<< "\t\tshaderStorageImageExtendedFormats: "       << features.shaderStorageImageExtendedFormats << std::endl
-		<< "\t\tshaderStorageImageMultisample: "           << features.shaderStorageImageMultisample << std::endl
-		<< "\t\tshaderStorageImageReadWithoutFormat: "     << features.shaderStorageImageReadWithoutFormat << std::endl
-		<< "\t\tshaderStorageImageWriteWithoutFormat: "    << features.shaderStorageImageWriteWithoutFormat << std::endl
+		<< "\t\trobustBufferAccess:                      " << features.robustBufferAccess << std::endl
+		<< "\t\tfullDrawIndexUint32:                     " << features.fullDrawIndexUint32 << std::endl
+		<< "\t\timageCubeArray:                          " << features.imageCubeArray << std::endl
+		<< "\t\tindependentBlend:                        " << features.independentBlend << std::endl
+		<< "\t\tgeometryShader:                          " << features.geometryShader << std::endl
+		<< "\t\ttessellationShader:                      " << features.tessellationShader << std::endl
+		<< "\t\tsampleRateShading:                       " << features.sampleRateShading << std::endl
+		<< "\t\tdualSrcBlend:                            " << features.dualSrcBlend << std::endl
+		<< "\t\tlogicOp:                                 " << features.logicOp << std::endl
+		<< "\t\tmultiDrawIndirect:                       " << features.multiDrawIndirect << std::endl
+		<< "\t\tdrawIndirectFirstInstance:               " << features.drawIndirectFirstInstance << std::endl
+		<< "\t\tdepthClamp:                              " << features.depthClamp << std::endl
+		<< "\t\tdepthBiasClamp:                          " << features.depthBiasClamp << std::endl
+		<< "\t\tfillModeNonSolid:                        " << features.fillModeNonSolid << std::endl
+		<< "\t\tdepthBounds:                             " << features.depthBounds << std::endl
+		<< "\t\twideLines:                               " << features.wideLines << std::endl
+		<< "\t\tlargePoints:                             " << features.largePoints << std::endl
+		<< "\t\talphaToOne:                              " << features.alphaToOne << std::endl
+		<< "\t\tmultiViewport:                           " << features.multiViewport << std::endl
+		<< "\t\tsamplerAnisotropy:                       " << features.samplerAnisotropy << std::endl
+		<< "\t\ttextureCompressionETC2:                  " << features.textureCompressionETC2 << std::endl
+		<< "\t\ttextureCompressionASTC_LDR:              " << features.textureCompressionASTC_LDR << std::endl
+		<< "\t\ttextureCompressionBC:                    " << features.textureCompressionBC << std::endl
+		<< "\t\tocclusionQueryPrecise:                   " << features.occlusionQueryPrecise << std::endl
+		<< "\t\tpipelineStatisticsQuery:                 " << features.pipelineStatisticsQuery << std::endl
+		<< "\t\tvertexPipelineStoresAndAtomics:          " << features.vertexPipelineStoresAndAtomics << std::endl
+		<< "\t\tfragmentStoresAndAtomics:                " << features.fragmentStoresAndAtomics << std::endl
+		<< "\t\tshaderTessellationAndGeometryPointSize:  " << features.shaderTessellationAndGeometryPointSize << std::endl
+		<< "\t\tshaderImageGatherExtended:               " << features.shaderImageGatherExtended << std::endl
+		<< "\t\tshaderStorageImageExtendedFormats:       " << features.shaderStorageImageExtendedFormats << std::endl
+		<< "\t\tshaderStorageImageMultisample:           " << features.shaderStorageImageMultisample << std::endl
+		<< "\t\tshaderStorageImageReadWithoutFormat:     " << features.shaderStorageImageReadWithoutFormat << std::endl
+		<< "\t\tshaderStorageImageWriteWithoutFormat:    " << features.shaderStorageImageWriteWithoutFormat << std::endl
 		<< "\t\tshaderUniformBufferArrayDynamicIndexing: " << features.shaderUniformBufferArrayDynamicIndexing << std::endl
-		<< "\t\tshaderSampledImageArrayDynamicIndexing: "  << features.shaderSampledImageArrayDynamicIndexing << std::endl
+		<< "\t\tshaderSampledImageArrayDynamicIndexing:  " << features.shaderSampledImageArrayDynamicIndexing << std::endl
 		<< "\t\tshaderStorageBufferArrayDynamicIndexing: " << features.shaderStorageBufferArrayDynamicIndexing << std::endl
-		<< "\t\tshaderStorageImageArrayDynamicIndexing: "  << features.shaderStorageImageArrayDynamicIndexing << std::endl
-		<< "\t\tshaderClipDistance: "                      << features.shaderClipDistance << std::endl
-		<< "\t\tshaderCullDistance: "                      << features.shaderCullDistance << std::endl
-		<< "\t\tshaderFloat64: "                           << features.shaderFloat64 << std::endl
-		<< "\t\tshaderInt64: "                             << features.shaderInt64 << std::endl
-		<< "\t\tshaderInt16: "                             << features.shaderInt16 << std::endl
-		<< "\t\tshaderResourceResidency: "                 << features.shaderResourceResidency << std::endl
-		<< "\t\tshaderResourceMinLod: "                    << features.shaderResourceMinLod << std::endl
-		<< "\t\tsparseBinding: "                           << features.sparseBinding << std::endl
-		<< "\t\tsparseResidencyBuffer: "                   << features.sparseResidencyBuffer << std::endl
-		<< "\t\tsparseResidencyImage2D: "                  << features.sparseResidencyImage2D << std::endl
-		<< "\t\tsparseResidencyImage3D: "                  << features.sparseResidencyImage3D << std::endl
-		<< "\t\tsparseResidency2Samples: "                 << features.sparseResidency2Samples << std::endl
-		<< "\t\tsparseResidency4Samples: "                 << features.sparseResidency4Samples << std::endl
-		<< "\t\tsparseResidency8Samples: "                 << features.sparseResidency8Samples << std::endl
-		<< "\t\tsparseResidency16Samples: "                << features.sparseResidency16Samples << std::endl
-		<< "\t\tsparseResidencyAliased: "                  << features.sparseResidencyAliased << std::endl
-		<< "\t\tvariableMultisampleRate: "                 << features.variableMultisampleRate << std::endl
-		<< "\t\tinheritedQueries: "                        << features.inheritedQueries << std::endl;
+		<< "\t\tshaderStorageImageArrayDynamicIndexing:  " << features.shaderStorageImageArrayDynamicIndexing << std::endl
+		<< "\t\tshaderClipDistance:                      " << features.shaderClipDistance << std::endl
+		<< "\t\tshaderCullDistance:                      " << features.shaderCullDistance << std::endl
+		<< "\t\tshaderFloat64:                           " << features.shaderFloat64 << std::endl
+		<< "\t\tshaderInt64:                             " << features.shaderInt64 << std::endl
+		<< "\t\tshaderInt16:                             " << features.shaderInt16 << std::endl
+		<< "\t\tshaderResourceResidency:                 " << features.shaderResourceResidency << std::endl
+		<< "\t\tshaderResourceMinLod:                    " << features.shaderResourceMinLod << std::endl
+		<< "\t\tsparseBinding:                           " << features.sparseBinding << std::endl
+		<< "\t\tsparseResidencyBuffer:                   " << features.sparseResidencyBuffer << std::endl
+		<< "\t\tsparseResidencyImage2D:                  " << features.sparseResidencyImage2D << std::endl
+		<< "\t\tsparseResidencyImage3D:                  " << features.sparseResidencyImage3D << std::endl
+		<< "\t\tsparseResidency2Samples:                 " << features.sparseResidency2Samples << std::endl
+		<< "\t\tsparseResidency4Samples:                 " << features.sparseResidency4Samples << std::endl
+		<< "\t\tsparseResidency8Samples:                 " << features.sparseResidency8Samples << std::endl
+		<< "\t\tsparseResidency16Samples:                " << features.sparseResidency16Samples << std::endl
+		<< "\t\tsparseResidencyAliased:                  " << features.sparseResidencyAliased << std::endl
+		<< "\t\tvariableMultisampleRate:                 " << features.variableMultisampleRate << std::endl
+		<< "\t\tinheritedQueries:                        " << features.inheritedQueries << std::endl;
 }
 
 void dumpPhysicalDevice(const VkPhysicalDevice& device)
@@ -269,11 +269,11 @@ void dumpPhysicalDevice(const VkPhysicalDevice& device)
 			<< VK_VERSION_MAJOR(properties.apiVersion) << "."
 			<< VK_VERSION_MINOR(properties.apiVersion) << "."
 			<< VK_VERSION_PATCH(properties.apiVersion) << std::endl
-		<< "\tdiver version: " << properties.driverVersion << std::endl
-		<< "\tvendor id: " << properties.vendorID << std::endl
-		<< "\tdevice id: " << properties.deviceID << std::endl
-		<< "\tdevice type: " << properties.deviceType << " (" << physical_device_type_name[properties.deviceType] << ")" << std::endl
-		<< "\tdevice name: " << properties.deviceName << std::endl
+		<< "\tdiver version:      " << properties.driverVersion << std::endl
+		<< "\tvendor id:          " << properties.vendorID << std::endl
+		<< "\tdevice id:          " << properties.deviceID << std::endl
+		<< "\tdevice type:        " << properties.deviceType << " (" << physical_device_type_name[properties.deviceType] << ")" << std::endl
+		<< "\tdevice name:        " << properties.deviceName << std::endl
 		<< "\tpipeline cach uuid: " << properties.pipelineCacheUUID << std::endl;
 		dumpPhysicalDeviceLimit(properties.limits);
 		// std::cout << "\tsparse properties: " << "..." << std::endl; // properties.sparseProperties
@@ -282,12 +282,46 @@ void dumpPhysicalDevice(const VkPhysicalDevice& device)
 	vkGetPhysicalDeviceFeatures(device, &features);
 	dumpPhysicalDeviceFeatures(features);
 
-	// VkPhysicalDeviceMemoryProperties memory;
-	// vkGetPhysicalDeviceMemoryProperties(device, &memory);
+	VkPhysicalDeviceMemoryProperties memory;
+	vkGetPhysicalDeviceMemoryProperties(device, &memory);
+	std::cout << "\tmemory types [" << memory.memoryTypeCount << "]" << std::endl;
+	for (std::size_t i = 0; i < memory.memoryTypeCount; ++i) {
+		const auto& type = memory.memoryTypes[i];
+		std::cout << "\t\t#" << i << std::endl
+			<< "\t\theap index:                                 " << type.heapIndex << std::endl
+			<< "\t\tVK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT:        " << (0 != (VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT & type.propertyFlags)) << std::endl
+			<< "\t\tVK_MEMORY_PROPERTY_HOST_VISIBLE_BIT:        " << (0 != (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT & type.propertyFlags)) << std::endl
+			<< "\t\tVK_MEMORY_PROPERTY_HOST_COHERENT_BIT:       " << (0 != (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT & type.propertyFlags)) << std::endl
+			<< "\t\tVK_MEMORY_PROPERTY_HOST_CACHED_BIT:         " << (0 != (VK_MEMORY_PROPERTY_HOST_CACHED_BIT & type.propertyFlags)) << std::endl
+			<< "\t\tVK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT:    " << (0 != (VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT & type.propertyFlags)) << std::endl
+			<< "\t\tVK_MEMORY_PROPERTY_PROTECTED_BIT:           " << (0 != (VK_MEMORY_PROPERTY_PROTECTED_BIT & type.propertyFlags)) << std::endl
+			<< "\t\tVK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD: " << (0 != (VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD & type.propertyFlags)) << std::endl
+			<< "\t\tVK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD: " << (0 != (VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD & type.propertyFlags)) << std::endl
+			<< "\t\tVK_MEMORY_PROPERTY_FLAG_BITS_MAX_ENUM:      " << (0 != (VK_MEMORY_PROPERTY_FLAG_BITS_MAX_ENUM & type.propertyFlags)) << std::endl;
+	}
+
+	std::uint32_t familyCount;
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, nullptr);
+	auto families = std::vector<VkQueueFamilyProperties>(familyCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, families.data());
+
+	std::cout << "\tqueue families [" << familyCount << "]" << std::endl;
+	for (std::size_t i = 0; i < familyCount; ++i) {
+		const auto& family = families[i];
+		std::cout << "\t\t#" << i << std::endl
+			<< "\t\tqueue count:                 " << family.queueCount << std::endl
+			<< "\t\tVK_QUEUE_GRAPHICS_BIT:       " << (0 != (VK_QUEUE_GRAPHICS_BIT & family.queueFlags)) << std::endl
+			<< "\t\tVK_QUEUE_COMPUTE_BIT:        " << (0 != (VK_QUEUE_COMPUTE_BIT & family.queueFlags)) << std::endl
+			<< "\t\tVK_QUEUE_TRANSFER_BIT:       " << (0 != (VK_QUEUE_TRANSFER_BIT & family.queueFlags)) << std::endl
+			<< "\t\tVK_QUEUE_SPARSE_BINDING_BIT: " << (0 != (VK_QUEUE_SPARSE_BINDING_BIT & family.queueFlags)) << std::endl
+			<< "\t\tVK_QUEUE_PROTECTED_BIT:      " << (0 != (VK_QUEUE_PROTECTED_BIT & family.queueFlags)) << std::endl;
+	}
 }
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
+	std::cout << std::boolalpha;
+
 	VkApplicationInfo appInfo;
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   appInfo.pNext = nullptr;
