@@ -1170,33 +1170,35 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	// we initialzed vulkan (yay)
 	std::cout << "hello vulkan" << std::endl;
 
-	std::uint32_t imageIndex;
-	error << vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<std::uint64_t>::max(), semaphoreImageAvailable, VK_NULL_HANDLE, &imageIndex);
-	VkSubmitInfo submitInfo;
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pNext = nullptr;
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = &semaphoreImageAvailable;
-	VkPipelineStageFlags waitStages[] {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-	submitInfo.pWaitDstStageMask = waitStages;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = &semaphoreRenderingDone;
-
-	error << vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
-
-	VkPresentInfoKHR presentInfo;
-	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-  presentInfo.pNext = nullptr;
-  presentInfo.waitSemaphoreCount = 1;
-  presentInfo.pWaitSemaphores = &semaphoreRenderingDone;
-  presentInfo.swapchainCount = 1;
-  presentInfo.pSwapchains = &swapchain;
-  presentInfo.pImageIndices = &imageIndex;
-  presentInfo.pResults = nullptr;
-
 	while (!glfwWindowShouldClose(window)) {
+		std::uint32_t imageIndex;
+		error << vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<std::uint64_t>::max(), semaphoreImageAvailable, VK_NULL_HANDLE, &imageIndex);
+		VkSubmitInfo submitInfo;
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.pNext = nullptr;
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = &semaphoreImageAvailable;
+		VkPipelineStageFlags waitStages[] {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = &semaphoreRenderingDone;
+
+		error << vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+
+		VkPresentInfoKHR presentInfo;
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.pNext = nullptr;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = &semaphoreRenderingDone;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &swapchain;
+		presentInfo.pImageIndices = &imageIndex;
+		presentInfo.pResults = nullptr;
+
+		error << vkQueuePresentKHR(queue, &presentInfo);
+
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_Q))
 			glfwSetWindowShouldClose(window, true);
