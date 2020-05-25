@@ -61,6 +61,314 @@ std::unordered_map<std::underlying_type_t<VkPhysicalDeviceType>, std::string> ph
 	{VK_PHYSICAL_DEVICE_TYPE_CPU,            "VK_PHYSICAL_DEVICE_TYPE_CPU"},
 };
 
+std::unordered_map<std::underlying_type_t<VkFormat>, std::string> format_string {
+	{VK_FORMAT_UNDEFINED,                                      "VK_FORMAT_UNDEFINED"},
+	{VK_FORMAT_R4G4_UNORM_PACK8,                               "VK_FORMAT_R4G4_UNORM_PACK8"},
+	{VK_FORMAT_R4G4B4A4_UNORM_PACK16,                          "VK_FORMAT_R4G4B4A4_UNORM_PACK16"},
+	{VK_FORMAT_B4G4R4A4_UNORM_PACK16,                          "VK_FORMAT_B4G4R4A4_UNORM_PACK16"},
+	{VK_FORMAT_R5G6B5_UNORM_PACK16,                            "VK_FORMAT_R5G6B5_UNORM_PACK16"},
+	{VK_FORMAT_B5G6R5_UNORM_PACK16,                            "VK_FORMAT_B5G6R5_UNORM_PACK16"},
+	{VK_FORMAT_R5G5B5A1_UNORM_PACK16,                          "VK_FORMAT_R5G5B5A1_UNORM_PACK16"},
+	{VK_FORMAT_B5G5R5A1_UNORM_PACK16,                          "VK_FORMAT_B5G5R5A1_UNORM_PACK16"},
+	{VK_FORMAT_A1R5G5B5_UNORM_PACK16,                          "VK_FORMAT_A1R5G5B5_UNORM_PACK16"},
+	{VK_FORMAT_R8_UNORM,                                       "VK_FORMAT_R8_UNORM"},
+	{VK_FORMAT_R8_SNORM,                                       "VK_FORMAT_R8_SNORM"},
+	{VK_FORMAT_R8_USCALED,                                     "VK_FORMAT_R8_USCALED"},
+	{VK_FORMAT_R8_SSCALED,                                     "VK_FORMAT_R8_SSCALED"},
+	{VK_FORMAT_R8_UINT,                                        "VK_FORMAT_R8_UINT"},
+	{VK_FORMAT_R8_SINT,                                        "VK_FORMAT_R8_SINT"},
+	{VK_FORMAT_R8_SRGB,                                        "VK_FORMAT_R8_SRGB"},
+	{VK_FORMAT_R8G8_UNORM,                                     "VK_FORMAT_R8G8_UNORM"},
+	{VK_FORMAT_R8G8_SNORM,                                     "VK_FORMAT_R8G8_SNORM"},
+	{VK_FORMAT_R8G8_USCALED,                                   "VK_FORMAT_R8G8_USCALED"},
+	{VK_FORMAT_R8G8_SSCALED,                                   "VK_FORMAT_R8G8_SSCALED"},
+	{VK_FORMAT_R8G8_UINT,                                      "VK_FORMAT_R8G8_UINT"},
+	{VK_FORMAT_R8G8_SINT,                                      "VK_FORMAT_R8G8_SINT"},
+	{VK_FORMAT_R8G8_SRGB,                                      "VK_FORMAT_R8G8_SRGB"},
+	{VK_FORMAT_R8G8B8_UNORM,                                   "VK_FORMAT_R8G8B8_UNORM"},
+	{VK_FORMAT_R8G8B8_SNORM,                                   "VK_FORMAT_R8G8B8_SNORM"},
+	{VK_FORMAT_R8G8B8_USCALED,                                 "VK_FORMAT_R8G8B8_USCALED"},
+	{VK_FORMAT_R8G8B8_SSCALED,                                 "VK_FORMAT_R8G8B8_SSCALED"},
+	{VK_FORMAT_R8G8B8_UINT,                                    "VK_FORMAT_R8G8B8_UINT"},
+	{VK_FORMAT_R8G8B8_SINT,                                    "VK_FORMAT_R8G8B8_SINT"},
+	{VK_FORMAT_R8G8B8_SRGB,                                    "VK_FORMAT_R8G8B8_SRGB"},
+	{VK_FORMAT_B8G8R8_UNORM,                                   "VK_FORMAT_B8G8R8_UNORM"},
+	{VK_FORMAT_B8G8R8_SNORM,                                   "VK_FORMAT_B8G8R8_SNORM"},
+	{VK_FORMAT_B8G8R8_USCALED,                                 "VK_FORMAT_B8G8R8_USCALED"},
+	{VK_FORMAT_B8G8R8_SSCALED,                                 "VK_FORMAT_B8G8R8_SSCALED"},
+	{VK_FORMAT_B8G8R8_UINT,                                    "VK_FORMAT_B8G8R8_UINT"},
+	{VK_FORMAT_B8G8R8_SINT,                                    "VK_FORMAT_B8G8R8_SINT"},
+	{VK_FORMAT_B8G8R8_SRGB,                                    "VK_FORMAT_B8G8R8_SRGB"},
+	{VK_FORMAT_R8G8B8A8_UNORM,                                 "VK_FORMAT_R8G8B8A8_UNORM"},
+	{VK_FORMAT_R8G8B8A8_SNORM,                                 "VK_FORMAT_R8G8B8A8_SNORM"},
+	{VK_FORMAT_R8G8B8A8_USCALED,                               "VK_FORMAT_R8G8B8A8_USCALED"},
+	{VK_FORMAT_R8G8B8A8_SSCALED,                               "VK_FORMAT_R8G8B8A8_SSCALED"},
+	{VK_FORMAT_R8G8B8A8_UINT,                                  "VK_FORMAT_R8G8B8A8_UINT"},
+	{VK_FORMAT_R8G8B8A8_SINT,                                  "VK_FORMAT_R8G8B8A8_SINT"},
+	{VK_FORMAT_R8G8B8A8_SRGB,                                  "VK_FORMAT_R8G8B8A8_SRGB"},
+	{VK_FORMAT_B8G8R8A8_UNORM,                                 "VK_FORMAT_B8G8R8A8_UNORM"},
+	{VK_FORMAT_B8G8R8A8_SNORM,                                 "VK_FORMAT_B8G8R8A8_SNORM"},
+	{VK_FORMAT_B8G8R8A8_USCALED,                               "VK_FORMAT_B8G8R8A8_USCALED"},
+	{VK_FORMAT_B8G8R8A8_SSCALED,                               "VK_FORMAT_B8G8R8A8_SSCALED"},
+	{VK_FORMAT_B8G8R8A8_UINT,                                  "VK_FORMAT_B8G8R8A8_UINT"},
+	{VK_FORMAT_B8G8R8A8_SINT,                                  "VK_FORMAT_B8G8R8A8_SINT"},
+	{VK_FORMAT_B8G8R8A8_SRGB,                                  "VK_FORMAT_B8G8R8A8_SRGB"},
+	{VK_FORMAT_A8B8G8R8_UNORM_PACK32,                          "VK_FORMAT_A8B8G8R8_UNORM_PACK32"},
+	{VK_FORMAT_A8B8G8R8_SNORM_PACK32,                          "VK_FORMAT_A8B8G8R8_SNORM_PACK32"},
+	{VK_FORMAT_A8B8G8R8_USCALED_PACK32,                        "VK_FORMAT_A8B8G8R8_USCALED_PACK32"},
+	{VK_FORMAT_A8B8G8R8_SSCALED_PACK32,                        "VK_FORMAT_A8B8G8R8_SSCALED_PACK32"},
+	{VK_FORMAT_A8B8G8R8_UINT_PACK32,                           "VK_FORMAT_A8B8G8R8_UINT_PACK32"},
+	{VK_FORMAT_A8B8G8R8_SINT_PACK32,                           "VK_FORMAT_A8B8G8R8_SINT_PACK32"},
+	{VK_FORMAT_A8B8G8R8_SRGB_PACK32,                           "VK_FORMAT_A8B8G8R8_SRGB_PACK32"},
+	{VK_FORMAT_A2R10G10B10_UNORM_PACK32,                       "VK_FORMAT_A2R10G10B10_UNORM_PACK32"},
+	{VK_FORMAT_A2R10G10B10_SNORM_PACK32,                       "VK_FORMAT_A2R10G10B10_SNORM_PACK32"},
+	{VK_FORMAT_A2R10G10B10_USCALED_PACK32,                     "VK_FORMAT_A2R10G10B10_USCALED_PACK32"},
+	{VK_FORMAT_A2R10G10B10_SSCALED_PACK32,                     "VK_FORMAT_A2R10G10B10_SSCALED_PACK32"},
+	{VK_FORMAT_A2R10G10B10_UINT_PACK32,                        "VK_FORMAT_A2R10G10B10_UINT_PACK32"},
+	{VK_FORMAT_A2R10G10B10_SINT_PACK32,                        "VK_FORMAT_A2R10G10B10_SINT_PACK32"},
+	{VK_FORMAT_A2B10G10R10_UNORM_PACK32,                       "VK_FORMAT_A2B10G10R10_UNORM_PACK32"},
+	{VK_FORMAT_A2B10G10R10_SNORM_PACK32,                       "VK_FORMAT_A2B10G10R10_SNORM_PACK32"},
+	{VK_FORMAT_A2B10G10R10_USCALED_PACK32,                     "VK_FORMAT_A2B10G10R10_USCALED_PACK32"},
+	{VK_FORMAT_A2B10G10R10_SSCALED_PACK32,                     "VK_FORMAT_A2B10G10R10_SSCALED_PACK32"},
+	{VK_FORMAT_A2B10G10R10_UINT_PACK32,                        "VK_FORMAT_A2B10G10R10_UINT_PACK32"},
+	{VK_FORMAT_A2B10G10R10_SINT_PACK32,                        "VK_FORMAT_A2B10G10R10_SINT_PACK32"},
+	{VK_FORMAT_R16_UNORM,                                      "VK_FORMAT_R16_UNORM"},
+	{VK_FORMAT_R16_SNORM,                                      "VK_FORMAT_R16_SNORM"},
+	{VK_FORMAT_R16_USCALED,                                    "VK_FORMAT_R16_USCALED"},
+	{VK_FORMAT_R16_SSCALED,                                    "VK_FORMAT_R16_SSCALED"},
+	{VK_FORMAT_R16_UINT,                                       "VK_FORMAT_R16_UINT"},
+	{VK_FORMAT_R16_SINT,                                       "VK_FORMAT_R16_SINT"},
+	{VK_FORMAT_R16_SFLOAT,                                     "VK_FORMAT_R16_SFLOAT"},
+	{VK_FORMAT_R16G16_UNORM,                                   "VK_FORMAT_R16G16_UNORM"},
+	{VK_FORMAT_R16G16_SNORM,                                   "VK_FORMAT_R16G16_SNORM"},
+	{VK_FORMAT_R16G16_USCALED,                                 "VK_FORMAT_R16G16_USCALED"},
+	{VK_FORMAT_R16G16_SSCALED,                                 "VK_FORMAT_R16G16_SSCALED"},
+	{VK_FORMAT_R16G16_UINT,                                    "VK_FORMAT_R16G16_UINT"},
+	{VK_FORMAT_R16G16_SINT,                                    "VK_FORMAT_R16G16_SINT"},
+	{VK_FORMAT_R16G16_SFLOAT,                                  "VK_FORMAT_R16G16_SFLOAT"},
+	{VK_FORMAT_R16G16B16_UNORM,                                "VK_FORMAT_R16G16B16_UNORM"},
+	{VK_FORMAT_R16G16B16_SNORM,                                "VK_FORMAT_R16G16B16_SNORM"},
+	{VK_FORMAT_R16G16B16_USCALED,                              "VK_FORMAT_R16G16B16_USCALED"},
+	{VK_FORMAT_R16G16B16_SSCALED,                              "VK_FORMAT_R16G16B16_SSCALED"},
+	{VK_FORMAT_R16G16B16_UINT,                                 "VK_FORMAT_R16G16B16_UINT"},
+	{VK_FORMAT_R16G16B16_SINT,                                 "VK_FORMAT_R16G16B16_SINT"},
+	{VK_FORMAT_R16G16B16_SFLOAT,                               "VK_FORMAT_R16G16B16_SFLOAT"},
+	{VK_FORMAT_R16G16B16A16_UNORM,                             "VK_FORMAT_R16G16B16A16_UNORM"},
+	{VK_FORMAT_R16G16B16A16_SNORM,                             "VK_FORMAT_R16G16B16A16_SNORM"},
+	{VK_FORMAT_R16G16B16A16_USCALED,                           "VK_FORMAT_R16G16B16A16_USCALED"},
+	{VK_FORMAT_R16G16B16A16_SSCALED,                           "VK_FORMAT_R16G16B16A16_SSCALED"},
+	{VK_FORMAT_R16G16B16A16_UINT,                              "VK_FORMAT_R16G16B16A16_UINT"},
+	{VK_FORMAT_R16G16B16A16_SINT,                              "VK_FORMAT_R16G16B16A16_SINT"},
+	{VK_FORMAT_R16G16B16A16_SFLOAT,                            "VK_FORMAT_R16G16B16A16_SFLOAT"},
+	{VK_FORMAT_R32_UINT,                                       "VK_FORMAT_R32_UINT"},
+	{VK_FORMAT_R32_SINT,                                       "VK_FORMAT_R32_SINT"},
+	{VK_FORMAT_R32_SFLOAT,                                     "VK_FORMAT_R32_SFLOAT"},
+	{VK_FORMAT_R32G32_UINT,                                    "VK_FORMAT_R32G32_UINT"},
+	{VK_FORMAT_R32G32_SINT,                                    "VK_FORMAT_R32G32_SINT"},
+	{VK_FORMAT_R32G32_SFLOAT,                                  "VK_FORMAT_R32G32_SFLOAT"},
+	{VK_FORMAT_R32G32B32_UINT,                                 "VK_FORMAT_R32G32B32_UINT"},
+	{VK_FORMAT_R32G32B32_SINT,                                 "VK_FORMAT_R32G32B32_SINT"},
+	{VK_FORMAT_R32G32B32_SFLOAT,                               "VK_FORMAT_R32G32B32_SFLOAT"},
+	{VK_FORMAT_R32G32B32A32_UINT,                              "VK_FORMAT_R32G32B32A32_UINT"},
+	{VK_FORMAT_R32G32B32A32_SINT,                              "VK_FORMAT_R32G32B32A32_SINT"},
+	{VK_FORMAT_R32G32B32A32_SFLOAT,                            "VK_FORMAT_R32G32B32A32_SFLOAT"},
+	{VK_FORMAT_R64_UINT,                                       "VK_FORMAT_R64_UINT"},
+	{VK_FORMAT_R64_SINT,                                       "VK_FORMAT_R64_SINT"},
+	{VK_FORMAT_R64_SFLOAT,                                     "VK_FORMAT_R64_SFLOAT"},
+	{VK_FORMAT_R64G64_UINT,                                    "VK_FORMAT_R64G64_UINT"},
+	{VK_FORMAT_R64G64_SINT,                                    "VK_FORMAT_R64G64_SINT"},
+	{VK_FORMAT_R64G64_SFLOAT,                                  "VK_FORMAT_R64G64_SFLOAT"},
+	{VK_FORMAT_R64G64B64_UINT,                                 "VK_FORMAT_R64G64B64_UINT"},
+	{VK_FORMAT_R64G64B64_SINT,                                 "VK_FORMAT_R64G64B64_SINT"},
+	{VK_FORMAT_R64G64B64_SFLOAT,                               "VK_FORMAT_R64G64B64_SFLOAT"},
+	{VK_FORMAT_R64G64B64A64_UINT,                              "VK_FORMAT_R64G64B64A64_UINT"},
+	{VK_FORMAT_R64G64B64A64_SINT,                              "VK_FORMAT_R64G64B64A64_SINT"},
+	{VK_FORMAT_R64G64B64A64_SFLOAT,                            "VK_FORMAT_R64G64B64A64_SFLOAT"},
+	{VK_FORMAT_B10G11R11_UFLOAT_PACK32,                        "VK_FORMAT_B10G11R11_UFLOAT_PACK32"},
+	{VK_FORMAT_E5B9G9R9_UFLOAT_PACK32,                         "VK_FORMAT_E5B9G9R9_UFLOAT_PACK32"},
+	{VK_FORMAT_D16_UNORM,                                      "VK_FORMAT_D16_UNORM"},
+	{VK_FORMAT_X8_D24_UNORM_PACK32,                            "VK_FORMAT_X8_D24_UNORM_PACK32"},
+	{VK_FORMAT_D32_SFLOAT,                                     "VK_FORMAT_D32_SFLOAT"},
+	{VK_FORMAT_S8_UINT,                                        "VK_FORMAT_S8_UINT"},
+	{VK_FORMAT_D16_UNORM_S8_UINT,                              "VK_FORMAT_D16_UNORM_S8_UINT"},
+	{VK_FORMAT_D24_UNORM_S8_UINT,                              "VK_FORMAT_D24_UNORM_S8_UINT"},
+	{VK_FORMAT_D32_SFLOAT_S8_UINT,                             "VK_FORMAT_D32_SFLOAT_S8_UINT"},
+	{VK_FORMAT_BC1_RGB_UNORM_BLOCK,                            "VK_FORMAT_BC1_RGB_UNORM_BLOCK"},
+	{VK_FORMAT_BC1_RGB_SRGB_BLOCK,                             "VK_FORMAT_BC1_RGB_SRGB_BLOCK"},
+	{VK_FORMAT_BC1_RGBA_UNORM_BLOCK,                           "VK_FORMAT_BC1_RGBA_UNORM_BLOCK"},
+	{VK_FORMAT_BC1_RGBA_SRGB_BLOCK,                            "VK_FORMAT_BC1_RGBA_SRGB_BLOCK"},
+	{VK_FORMAT_BC2_UNORM_BLOCK,                                "VK_FORMAT_BC2_UNORM_BLOCK"},
+	{VK_FORMAT_BC2_SRGB_BLOCK,                                 "VK_FORMAT_BC2_SRGB_BLOCK"},
+	{VK_FORMAT_BC3_UNORM_BLOCK,                                "VK_FORMAT_BC3_UNORM_BLOCK"},
+	{VK_FORMAT_BC3_SRGB_BLOCK,                                 "VK_FORMAT_BC3_SRGB_BLOCK"},
+	{VK_FORMAT_BC4_UNORM_BLOCK,                                "VK_FORMAT_BC4_UNORM_BLOCK"},
+	{VK_FORMAT_BC4_SNORM_BLOCK,                                "VK_FORMAT_BC4_SNORM_BLOCK"},
+	{VK_FORMAT_BC5_UNORM_BLOCK,                                "VK_FORMAT_BC5_UNORM_BLOCK"},
+	{VK_FORMAT_BC5_SNORM_BLOCK,                                "VK_FORMAT_BC5_SNORM_BLOCK"},
+	{VK_FORMAT_BC6H_UFLOAT_BLOCK,                              "VK_FORMAT_BC6H_UFLOAT_BLOCK"},
+	{VK_FORMAT_BC6H_SFLOAT_BLOCK,                              "VK_FORMAT_BC6H_SFLOAT_BLOCK"},
+	{VK_FORMAT_BC7_UNORM_BLOCK,                                "VK_FORMAT_BC7_UNORM_BLOCK"},
+	{VK_FORMAT_BC7_SRGB_BLOCK,                                 "VK_FORMAT_BC7_SRGB_BLOCK"},
+	{VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK,                        "VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK"},
+	{VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK,                         "VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK"},
+	{VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK,                      "VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK"},
+	{VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK,                       "VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK"},
+	{VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK,                      "VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK"},
+	{VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK,                       "VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK"},
+	{VK_FORMAT_EAC_R11_UNORM_BLOCK,                            "VK_FORMAT_EAC_R11_UNORM_BLOCK"},
+	{VK_FORMAT_EAC_R11_SNORM_BLOCK,                            "VK_FORMAT_EAC_R11_SNORM_BLOCK"},
+	{VK_FORMAT_EAC_R11G11_UNORM_BLOCK,                         "VK_FORMAT_EAC_R11G11_UNORM_BLOCK"},
+	{VK_FORMAT_EAC_R11G11_SNORM_BLOCK,                         "VK_FORMAT_EAC_R11G11_SNORM_BLOCK"},
+	{VK_FORMAT_ASTC_4x4_UNORM_BLOCK,                           "VK_FORMAT_ASTC_4x4_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_4x4_SRGB_BLOCK,                            "VK_FORMAT_ASTC_4x4_SRGB_BLOCK"},
+	{VK_FORMAT_ASTC_5x4_UNORM_BLOCK,                           "VK_FORMAT_ASTC_5x4_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_5x4_SRGB_BLOCK,                            "VK_FORMAT_ASTC_5x4_SRGB_BLOCK"},
+	{VK_FORMAT_ASTC_5x5_UNORM_BLOCK,                           "VK_FORMAT_ASTC_5x5_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_5x5_SRGB_BLOCK,                            "VK_FORMAT_ASTC_5x5_SRGB_BLOCK"},
+	{VK_FORMAT_ASTC_6x5_UNORM_BLOCK,                           "VK_FORMAT_ASTC_6x5_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_6x5_SRGB_BLOCK,                            "VK_FORMAT_ASTC_6x5_SRGB_BLOCK"},
+	{VK_FORMAT_ASTC_6x6_UNORM_BLOCK,                           "VK_FORMAT_ASTC_6x6_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_6x6_SRGB_BLOCK,                            "VK_FORMAT_ASTC_6x6_SRGB_BLOCK"},
+	{VK_FORMAT_ASTC_8x5_UNORM_BLOCK,                           "VK_FORMAT_ASTC_8x5_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_8x5_SRGB_BLOCK,                            "VK_FORMAT_ASTC_8x5_SRGB_BLOCK"},
+	{VK_FORMAT_ASTC_8x6_UNORM_BLOCK,                           "VK_FORMAT_ASTC_8x6_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_8x6_SRGB_BLOCK,                            "VK_FORMAT_ASTC_8x6_SRGB_BLOCK"},
+	{VK_FORMAT_ASTC_8x8_UNORM_BLOCK,                           "VK_FORMAT_ASTC_8x8_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_8x8_SRGB_BLOCK,                            "VK_FORMAT_ASTC_8x8_SRGB_BLOCK"},
+	{VK_FORMAT_ASTC_10x5_UNORM_BLOCK,                          "VK_FORMAT_ASTC_10x5_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_10x5_SRGB_BLOCK,                           "VK_FORMAT_ASTC_10x5_SRGB_BLOCK"},
+	{VK_FORMAT_ASTC_10x6_UNORM_BLOCK,                          "VK_FORMAT_ASTC_10x6_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_10x6_SRGB_BLOCK,                           "VK_FORMAT_ASTC_10x6_SRGB_BLOCK"},
+	{VK_FORMAT_ASTC_10x8_UNORM_BLOCK,                          "VK_FORMAT_ASTC_10x8_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_10x8_SRGB_BLOCK,                           "VK_FORMAT_ASTC_10x8_SRGB_BLOCK"},
+	{VK_FORMAT_ASTC_10x10_UNORM_BLOCK,                         "VK_FORMAT_ASTC_10x10_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_10x10_SRGB_BLOCK,                          "VK_FORMAT_ASTC_10x10_SRGB_BLOCK"},
+	{VK_FORMAT_ASTC_12x10_UNORM_BLOCK,                         "VK_FORMAT_ASTC_12x10_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_12x10_SRGB_BLOCK,                          "VK_FORMAT_ASTC_12x10_SRGB_BLOCK"},
+	{VK_FORMAT_ASTC_12x12_UNORM_BLOCK,                         "VK_FORMAT_ASTC_12x12_UNORM_BLOCK"},
+	{VK_FORMAT_ASTC_12x12_SRGB_BLOCK,                          "VK_FORMAT_ASTC_12x12_SRGB_BLOCK"},
+	{VK_FORMAT_G8B8G8R8_422_UNORM,                             "VK_FORMAT_G8B8G8R8_422_UNORM"},
+	{VK_FORMAT_B8G8R8G8_422_UNORM,                             "VK_FORMAT_B8G8R8G8_422_UNORM"},
+	{VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM,                      "VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM"},
+	{VK_FORMAT_G8_B8R8_2PLANE_420_UNORM,                       "VK_FORMAT_G8_B8R8_2PLANE_420_UNORM"},
+	{VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM,                      "VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM"},
+	{VK_FORMAT_G8_B8R8_2PLANE_422_UNORM,                       "VK_FORMAT_G8_B8R8_2PLANE_422_UNORM"},
+	{VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM,                      "VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM"},
+	{VK_FORMAT_R10X6_UNORM_PACK16,                             "VK_FORMAT_R10X6_UNORM_PACK16"},
+	{VK_FORMAT_R10X6G10X6_UNORM_2PACK16,                       "VK_FORMAT_R10X6G10X6_UNORM_2PACK16"},
+	{VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16,             "VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16"},
+	{VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16,         "VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16"},
+	{VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16,         "VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16"},
+	{VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16,     "VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16"},
+	{VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16,      "VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16"},
+	{VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16,     "VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16"},
+	{VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16,      "VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16"},
+	{VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16,     "VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16"},
+	{VK_FORMAT_R12X4_UNORM_PACK16,                             "VK_FORMAT_R12X4_UNORM_PACK16"},
+	{VK_FORMAT_R12X4G12X4_UNORM_2PACK16,                       "VK_FORMAT_R12X4G12X4_UNORM_2PACK16"},
+	{VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16,             "VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16"},
+	{VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16,         "VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16"},
+	{VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16,         "VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16"},
+	{VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16,     "VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16"},
+	{VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16,      "VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16"},
+	{VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16,     "VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16"},
+	{VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16,      "VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16"},
+	{VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16,     "VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16"},
+	{VK_FORMAT_G16B16G16R16_422_UNORM,                         "VK_FORMAT_G16B16G16R16_422_UNORM"},
+	{VK_FORMAT_B16G16R16G16_422_UNORM,                         "VK_FORMAT_B16G16R16G16_422_UNORM"},
+	{VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM,                   "VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM"},
+	{VK_FORMAT_G16_B16R16_2PLANE_420_UNORM,                    "VK_FORMAT_G16_B16R16_2PLANE_420_UNORM"},
+	{VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM,                   "VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM"},
+	{VK_FORMAT_G16_B16R16_2PLANE_422_UNORM,                    "VK_FORMAT_G16_B16R16_2PLANE_422_UNORM"},
+	{VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM,                   "VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM"},
+	{VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG,                    "VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG"},
+	{VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG,                    "VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG"},
+	{VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG,                    "VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG"},
+	{VK_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG,                    "VK_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG"},
+	{VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG,                     "VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG"},
+	{VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG,                     "VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG"},
+	{VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG,                     "VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG"},
+	{VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG,                     "VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG"},
+	{VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT,                      "VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_ASTC_5x4_SFLOAT_BLOCK_EXT,                      "VK_FORMAT_ASTC_5x4_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_ASTC_5x5_SFLOAT_BLOCK_EXT,                      "VK_FORMAT_ASTC_5x5_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_ASTC_6x5_SFLOAT_BLOCK_EXT,                      "VK_FORMAT_ASTC_6x5_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_ASTC_6x6_SFLOAT_BLOCK_EXT,                      "VK_FORMAT_ASTC_6x6_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_ASTC_8x5_SFLOAT_BLOCK_EXT,                      "VK_FORMAT_ASTC_8x5_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_ASTC_8x6_SFLOAT_BLOCK_EXT,                      "VK_FORMAT_ASTC_8x6_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_ASTC_8x8_SFLOAT_BLOCK_EXT,                      "VK_FORMAT_ASTC_8x8_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_ASTC_10x5_SFLOAT_BLOCK_EXT,                     "VK_FORMAT_ASTC_10x5_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_ASTC_10x6_SFLOAT_BLOCK_EXT,                     "VK_FORMAT_ASTC_10x6_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_ASTC_10x8_SFLOAT_BLOCK_EXT,                     "VK_FORMAT_ASTC_10x8_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_ASTC_10x10_SFLOAT_BLOCK_EXT,                    "VK_FORMAT_ASTC_10x10_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_ASTC_12x10_SFLOAT_BLOCK_EXT,                    "VK_FORMAT_ASTC_12x10_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK_EXT,                    "VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK_EXT"},
+	{VK_FORMAT_G8B8G8R8_422_UNORM_KHR,                         "VK_FORMAT_G8B8G8R8_422_UNORM_KHR"},
+	{VK_FORMAT_B8G8R8G8_422_UNORM_KHR,                         "VK_FORMAT_B8G8R8G8_422_UNORM_KHR"},
+	{VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM_KHR,                  "VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM_KHR"},
+	{VK_FORMAT_G8_B8R8_2PLANE_420_UNORM_KHR,                   "VK_FORMAT_G8_B8R8_2PLANE_420_UNORM_KHR"},
+	{VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM_KHR,                  "VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM_KHR"},
+	{VK_FORMAT_G8_B8R8_2PLANE_422_UNORM_KHR,                   "VK_FORMAT_G8_B8R8_2PLANE_422_UNORM_KHR"},
+	{VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM_KHR,                  "VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM_KHR"},
+	{VK_FORMAT_R10X6_UNORM_PACK16_KHR,                         "VK_FORMAT_R10X6_UNORM_PACK16_KHR"},
+	{VK_FORMAT_R10X6G10X6_UNORM_2PACK16_KHR,                   "VK_FORMAT_R10X6G10X6_UNORM_2PACK16_KHR"},
+	{VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16_KHR,         "VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16_KHR"},
+	{VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16_KHR,     "VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16_KHR"},
+	{VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16_KHR,     "VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16_KHR"},
+	{VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_KHR, "VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_KHR"},
+	{VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_KHR,  "VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_KHR"},
+	{VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16_KHR, "VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16_KHR"},
+	{VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16_KHR,  "VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16_KHR"},
+	{VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16_KHR, "VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16_KHR"},
+	{VK_FORMAT_R12X4_UNORM_PACK16_KHR,                         "VK_FORMAT_R12X4_UNORM_PACK16_KHR"},
+	{VK_FORMAT_R12X4G12X4_UNORM_2PACK16_KHR,                   "VK_FORMAT_R12X4G12X4_UNORM_2PACK16_KHR"},
+	{VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16_KHR,         "VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16_KHR"},
+	{VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16_KHR,     "VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16_KHR"},
+	{VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16_KHR,     "VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16_KHR"},
+	{VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_KHR, "VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_KHR"},
+	{VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_KHR,  "VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_KHR"},
+	{VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16_KHR, "VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16_KHR"},
+	{VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16_KHR,  "VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16_KHR"},
+	{VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16_KHR, "VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16_KHR"},
+	{VK_FORMAT_G16B16G16R16_422_UNORM_KHR,                     "VK_FORMAT_G16B16G16R16_422_UNORM_KHR"},
+	{VK_FORMAT_B16G16R16G16_422_UNORM_KHR,                     "VK_FORMAT_B16G16R16G16_422_UNORM_KHR"},
+	{VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM_KHR,               "VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM_KHR"},
+	{VK_FORMAT_G16_B16R16_2PLANE_420_UNORM_KHR,                "VK_FORMAT_G16_B16R16_2PLANE_420_UNORM_KHR"},
+	{VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM_KHR,               "VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM_KHR"},
+	{VK_FORMAT_G16_B16R16_2PLANE_422_UNORM_KHR,                "VK_FORMAT_G16_B16R16_2PLANE_422_UNORM_KHR"},
+	{VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM_KHR,               "VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM_KHR"},
+};
+
+std::unordered_map<std::underlying_type_t<VkPresentModeKHR>, std::string> present_mode_string {
+	{VK_PRESENT_MODE_IMMEDIATE_KHR,                 "VK_PRESENT_MODE_IMMEDIATE_KHR"},
+	{VK_PRESENT_MODE_MAILBOX_KHR,                   "VK_PRESENT_MODE_MAILBOX_KHR"},
+	{VK_PRESENT_MODE_FIFO_KHR,                      "VK_PRESENT_MODE_FIFO_KHR"},
+	{VK_PRESENT_MODE_FIFO_RELAXED_KHR,              "VK_PRESENT_MODE_FIFO_RELAXED_KHR"},
+	{VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR,     "VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR"},
+	{VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR, "VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR"},
+};
+
+std::unordered_map<std::underlying_type_t<VkColorSpaceKHR>, std::string> color_space_string {
+	{VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,          "VK_COLOR_SPACE_SRGB_NONLINEAR_KHR"},
+	{VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT,    "VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT"},
+	{VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT,    "VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT"},
+	{VK_COLOR_SPACE_DISPLAY_P3_LINEAR_EXT,       "VK_COLOR_SPACE_DISPLAY_P3_LINEAR_EXT"},
+	{VK_COLOR_SPACE_DCI_P3_NONLINEAR_EXT,        "VK_COLOR_SPACE_DCI_P3_NONLINEAR_EXT"},
+	{VK_COLOR_SPACE_BT709_LINEAR_EXT,            "VK_COLOR_SPACE_BT709_LINEAR_EXT"},
+	{VK_COLOR_SPACE_BT709_NONLINEAR_EXT,         "VK_COLOR_SPACE_BT709_NONLINEAR_EXT"},
+	{VK_COLOR_SPACE_BT2020_LINEAR_EXT,           "VK_COLOR_SPACE_BT2020_LINEAR_EXT"},
+	{VK_COLOR_SPACE_HDR10_ST2084_EXT,            "VK_COLOR_SPACE_HDR10_ST2084_EXT"},
+	{VK_COLOR_SPACE_DOLBYVISION_EXT,             "VK_COLOR_SPACE_DOLBYVISION_EXT"},
+	{VK_COLOR_SPACE_HDR10_HLG_EXT,               "VK_COLOR_SPACE_HDR10_HLG_EXT"},
+	{VK_COLOR_SPACE_ADOBERGB_LINEAR_EXT,         "VK_COLOR_SPACE_ADOBERGB_LINEAR_EXT"},
+	{VK_COLOR_SPACE_ADOBERGB_NONLINEAR_EXT,      "VK_COLOR_SPACE_ADOBERGB_NONLINEAR_EXT"},
+	{VK_COLOR_SPACE_PASS_THROUGH_EXT,            "VK_COLOR_SPACE_PASS_THROUGH_EXT"},
+	{VK_COLOR_SPACE_EXTENDED_SRGB_NONLINEAR_EXT, "VK_COLOR_SPACE_EXTENDED_SRGB_NONLINEAR_EXT"},
+	{VK_COLOR_SPACE_DISPLAY_NATIVE_AMD,          "VK_COLOR_SPACE_DISPLAY_NATIVE_AMD"},
+	{VK_COLORSPACE_SRGB_NONLINEAR_KHR,           "VK_COLORSPACE_SRGB_NONLINEAR_KHR"},
+	{VK_COLOR_SPACE_DCI_P3_LINEAR_EXT,           "VK_COLOR_SPACE_DCI_P3_LINEAR_EXT"},
+};
+
 #define concat2(a, b) a ## b
 #define concat(a, b) concat2(a, b)
 #define unique_name concat(unique_name_, __LINE__)
@@ -339,6 +647,27 @@ void dumpExtension(const VkExtensionProperties &extension)
 		<< "\tspecification version: " << extension.specVersion << std::endl;
 }
 
+void dumpSurfaceCapabilities(const VkSurfaceCapabilitiesKHR& capabilities)
+{
+	std::cout << "\tsurface" << std::endl
+		<< "\t\tminImageCount:           " << capabilities.minImageCount << std::endl
+  	<< "\t\tmaxImageCount:           " << capabilities.maxImageCount << std::endl
+  	<< "\t\tcurrentExtent:           "
+			<< capabilities.currentExtent.width << ", "
+			<< capabilities.currentExtent.height << std::endl
+  	<< "\t\tminImageExtent:          "
+			<< capabilities.minImageExtent.width << ", "
+			<< capabilities.minImageExtent.height << std::endl
+  	<< "\t\tmaxImageExtent:          "
+			<< capabilities.maxImageExtent.width << ", "
+			<< capabilities.maxImageExtent.height << std::endl
+  	<< "\t\tmaxImageArrayLayers:     " << capabilities.maxImageArrayLayers << std::endl
+  	<< "\t\tsupportedTransforms:     " << capabilities.supportedTransforms << std::endl
+  	<< "\t\tcurrentTransform:        " << capabilities.currentTransform << std::endl
+  	<< "\t\tsupportedCompositeAlpha: " << capabilities.supportedCompositeAlpha << std::endl
+  	<< "\t\tsupportedUsageFlags:     " << capabilities.supportedUsageFlags << std::endl;
+}
+
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
 	std::cout << std::boolalpha;
@@ -409,9 +738,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	VkInstance instance;
 	error << vkCreateInstance(&instanceInfo, nullptr, &instance);
 
-	VkSurfaceKHR surface;
-	error << glfwCreateWindowSurface(instance, window, nullptr, &surface);
-
 	std::uint32_t physicalDeviceCount;
 	error << vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
 	auto physicalDevices = std::vector<VkPhysicalDevice>(physicalDeviceCount);
@@ -430,6 +756,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
   queueInfo.pQueuePriorities = queuePriorities.data();
 
 	VkPhysicalDeviceFeatures features = {};
+	
+	auto physicalDevice = physicalDevices[0]; // TODO: choose best device
+
+	auto deviceExtensions = std::vector<const char*> {
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
 
 	VkDeviceCreateInfo deviceInfo;
 	deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -439,17 +771,97 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
   deviceInfo.pQueueCreateInfos = &queueInfo;
   deviceInfo.enabledLayerCount = 0;
   deviceInfo.ppEnabledLayerNames = nullptr;
-  deviceInfo.enabledExtensionCount = 0;
-  deviceInfo.ppEnabledExtensionNames = nullptr;
+  deviceInfo.enabledExtensionCount = deviceExtensions.size();
+  deviceInfo.ppEnabledExtensionNames = deviceExtensions.data();
   deviceInfo.pEnabledFeatures = &features;
-	
-	auto physicalDevice = physicalDevices[0]; // TODO: choose best device
 
 	VkDevice device;
 	error << vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &device);
 
+	VkSurfaceKHR surface;
+	error << glfwCreateWindowSurface(instance, window, nullptr, &surface);
+	VkSurfaceCapabilitiesKHR surfaceCapabilities;
+	error << vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfaceCapabilities);
+	dumpSurfaceCapabilities(surfaceCapabilities);
+
+	std::uint32_t formatCount;
+	error << vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, nullptr);
+	auto formats = std::vector<VkSurfaceFormatKHR>(formatCount);
+	error << vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, formats.data());
+	std::cout << "\t\tformat count: " << formatCount << std::endl;
+	for (const auto& format : formats) {
+		std::cout << "\t\t\t" << format.format << " (" << format_string[format.format] << "), "
+			<< format.colorSpace << " (" << color_space_string[format.colorSpace] << ")"<< std::endl;
+	}
+
+	std::uint32_t presentModeCount;
+	error << vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, nullptr);
+	auto presentModes = std::vector<VkPresentModeKHR>(presentModeCount);
+	error << vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes.data());
+	std::cout << "\t\tpresent modes count: " << presentModeCount << std::endl;
+	for (const auto& mode : presentModes)
+		std::cout << "\t\t\t" << mode << " (" << present_mode_string[mode] << ")" << std::endl;
+
+	VkSwapchainCreateInfoKHR swapchainInfo;
+	swapchainInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+  swapchainInfo.pNext = nullptr;
+  swapchainInfo.flags = 0;
+  swapchainInfo.surface = surface;
+  swapchainInfo.minImageCount = 2; // TODO: dependent
+  swapchainInfo.imageFormat = VK_FORMAT_B8G8R8A8_UNORM; // TODO: dependent
+  swapchainInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; // TODO: dependent
+  swapchainInfo.imageExtent = VkExtent2D{1280, 720}; // TODO: dependent
+  swapchainInfo.imageArrayLayers = 1;
+  swapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  swapchainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  swapchainInfo.queueFamilyIndexCount = 0;
+  swapchainInfo.pQueueFamilyIndices = nullptr;
+  swapchainInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+  swapchainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+  swapchainInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR; // TODO: dependent
+  swapchainInfo.clipped = VK_TRUE;
+  swapchainInfo.oldSwapchain = VK_NULL_HANDLE;
+
+	VkBool32 surfaceSupport;
+	error << vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, 0, surface, &surfaceSupport);
+	assert(surfaceSupport == VK_TRUE);
+
+	VkSwapchainKHR swapchain;
+	error << vkCreateSwapchainKHR(device, &swapchainInfo, nullptr, &swapchain);
+
+	std::uint32_t imageCount;
+	error << vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
+	auto images = std::vector<VkImage>(imageCount);
+	error << vkGetSwapchainImagesKHR(device, swapchain, &imageCount, images.data());
+
+	auto imageViews = std::vector<VkImageView>(imageCount);
+	for (std::size_t i = 0; i < imageCount; ++i) {
+		VkImageViewCreateInfo imageViewInfo;
+		imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		imageViewInfo.pNext = nullptr;
+		imageViewInfo.flags = 0;
+		imageViewInfo.image = images[i];
+		imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		imageViewInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
+		imageViewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
+		imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
+		imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
+		imageViewInfo.components.a = VK_COMPONENT_SWIZZLE_A;
+		imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		imageViewInfo.subresourceRange.baseMipLevel = 0;
+		imageViewInfo.subresourceRange.levelCount = 1;
+		imageViewInfo.subresourceRange.baseArrayLayer = 0;
+		imageViewInfo.subresourceRange.layerCount = 1;
+
+		error << vkCreateImageView(device, &imageViewInfo, nullptr, &imageViews[i]);
+	}
+	std::cout << imageViews.size() << " image viws created" << std::endl;
+
 	VkQueue queue;
 	vkGetDeviceQueue(device, 0, 0, &queue);
+
+	// we initialzed vulkan (yay)
+	std::cout << "hello vulkan" << std::endl;
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -457,11 +869,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 			glfwSetWindowShouldClose(window, true);
 	}
 
-	// we initialzed vulkan (yay)
-	std::cout << "hello vulkan" << std::endl;
-
 	// destroy vulkan
 	vkDeviceWaitIdle(device);
+	for (const auto& imageView : imageViews)
+		vkDestroyImageView(device, imageView, nullptr);
+	vkDestroySwapchainKHR(device, swapchain, nullptr);
 	vkDestroyDevice(device, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 	vkDestroyInstance(instance, nullptr);
