@@ -1043,6 +1043,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	subpassDescription.preserveAttachmentCount = 0;
 	subpassDescription.pPreserveAttachments = nullptr;
 
+	VkSubpassDependency subpassDependency;
+	subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+  subpassDependency.dstSubpass = 0;
+  subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  subpassDependency.srcAccessMask = 0;
+  subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+  subpassDependency.dependencyFlags = 0;
+
 	VkRenderPassCreateInfo renderPassInfo;
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
   renderPassInfo.pNext = nullptr;
@@ -1051,8 +1060,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
   renderPassInfo.pAttachments = &attachmentDescription;
   renderPassInfo.subpassCount = 1;
   renderPassInfo.pSubpasses = &subpassDescription;
-  renderPassInfo.dependencyCount = 0;
-  renderPassInfo.pDependencies = nullptr;
+  renderPassInfo.dependencyCount = 1;
+  renderPassInfo.pDependencies = &subpassDependency;
 
 	VkRenderPass renderPass;
 	error << vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass);
@@ -1174,6 +1183,18 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &semaphoreRenderingDone;
+
+	error << vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+
+	VkPresentInfoKHR presentInfo;
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+  presentInfo.pNext = nullptr;
+  presentInfo.waitSemaphoreCount = 1;
+  presentInfo.pWaitSemaphores = &semaphoreRenderingDone;
+  presentInfo.swapchainCount = 1;
+  presentInfo.pSwapchains = &swapchain;
+  presentInfo.pImageIndices = &imageIndex;
+  presentInfo.pResults = nullptr;
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
