@@ -693,19 +693,20 @@ VkShaderModule createShader(VkDevice device, const ShaderCode& code)
 	shaderInfo.pCode = code.data();
 
 	VkShaderModule shader;
-	vkCreateShaderModule(device, &shaderInfo, nullptr, &shader);
+	error << vkCreateShaderModule(device, &shaderInfo, nullptr, &shader);
 	return shader;
 }
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
 	std::cout << std::boolalpha;
+	const std::size_t window_width = 1280, window_height = 720;
+	VkFormat image_format = VK_FORMAT_B8G8R8A8_UNORM;
 
 	assert(glfwInit() == GLFW_TRUE);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-	const std::size_t window_width = 1280, window_height = 720;
 	GLFWwindow* window = glfwCreateWindow(window_width, window_height, "Vulkan", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
@@ -838,7 +839,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
   swapchainInfo.flags = 0;
   swapchainInfo.surface = surface;
   swapchainInfo.minImageCount = 2; // TODO: dependent
-  swapchainInfo.imageFormat = VK_FORMAT_B8G8R8A8_UNORM; // TODO: dependent
+  swapchainInfo.imageFormat = image_format; // TODO: dependent
   swapchainInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; // TODO: dependent
   swapchainInfo.imageExtent = VkExtent2D{window_width, window_height}; // TODO: dependent
   swapchainInfo.imageArrayLayers = 1;
@@ -872,7 +873,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 		imageViewInfo.flags = 0;
 		imageViewInfo.image = images[i];
 		imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		imageViewInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
+		imageViewInfo.format = image_format; 
 		imageViewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
 		imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
 		imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
@@ -965,16 +966,16 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
   rasterizationInfo.depthBiasSlopeFactor = 0.f;
   rasterizationInfo.lineWidth = 1.f;
 
-	VkPipelineMultisampleStateCreateInfo multisamplingInfo;
-	multisamplingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-  multisamplingInfo.pNext = nullptr;
-  multisamplingInfo.flags = 0;
-  multisamplingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-  multisamplingInfo.sampleShadingEnable = VK_FALSE;
-  multisamplingInfo.minSampleShading = 1.f;
-  multisamplingInfo.pSampleMask = nullptr;
-  multisamplingInfo.alphaToCoverageEnable = VK_FALSE;
-  multisamplingInfo.alphaToOneEnable = VK_FALSE;
+	VkPipelineMultisampleStateCreateInfo multisampleInfo;
+	multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+  multisampleInfo.pNext = nullptr;
+  multisampleInfo.flags = 0;
+  multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+  multisampleInfo.sampleShadingEnable = VK_FALSE;
+  multisampleInfo.minSampleShading = 1.f;
+  multisampleInfo.pSampleMask = nullptr;
+  multisampleInfo.alphaToCoverageEnable = VK_FALSE;
+  multisampleInfo.alphaToOneEnable = VK_FALSE;
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment;
 	colorBlendAttachment.blendEnable = VK_TRUE;
@@ -1003,6 +1004,101 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	colorBlendInfo.blendConstants[2] = 0.f;
 	colorBlendInfo.blendConstants[3] = 0.f;
 
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo;
+	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+  pipelineLayoutInfo.pNext = nullptr;
+  pipelineLayoutInfo.flags = 0;
+  pipelineLayoutInfo.setLayoutCount = 0;
+  pipelineLayoutInfo.pSetLayouts = nullptr;
+  pipelineLayoutInfo.pushConstantRangeCount = 0;
+  pipelineLayoutInfo.pPushConstantRanges = nullptr;
+
+	VkPipelineLayout pipelineLayout;
+	error << vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout);
+
+	VkAttachmentDescription attachmentDescription;
+	attachmentDescription.flags = 0;
+	attachmentDescription.format = image_format;
+	attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkAttachmentReference attachmentReference;
+	attachmentReference.attachment = 0;
+	attachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpassDescription;
+	subpassDescription.flags = 0;
+	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpassDescription.inputAttachmentCount = 0;
+	subpassDescription.pInputAttachments = nullptr;
+	subpassDescription.colorAttachmentCount = 1;
+	subpassDescription.pColorAttachments = &attachmentReference;
+	subpassDescription.pResolveAttachments = nullptr;
+	subpassDescription.pDepthStencilAttachment = nullptr;
+	subpassDescription.preserveAttachmentCount = 0;
+	subpassDescription.pPreserveAttachments = nullptr;
+
+	VkRenderPassCreateInfo renderPassInfo;
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  renderPassInfo.pNext = nullptr;
+  renderPassInfo.flags = 0;
+  renderPassInfo.attachmentCount = 1;
+  renderPassInfo.pAttachments = &attachmentDescription;
+  renderPassInfo.subpassCount = 1;
+  renderPassInfo.pSubpasses = &subpassDescription;
+  renderPassInfo.dependencyCount = 0;
+  renderPassInfo.pDependencies = nullptr;
+
+	VkRenderPass renderPass;
+	error << vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass);
+
+	VkGraphicsPipelineCreateInfo graphicsPipelineInfo;
+	graphicsPipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+  graphicsPipelineInfo.pNext = nullptr;
+  graphicsPipelineInfo.flags = 0;
+  graphicsPipelineInfo.stageCount = 2;
+  graphicsPipelineInfo.pStages = shaderStageInfos.data();
+  graphicsPipelineInfo.pVertexInputState = &vertexInputInfo;
+  graphicsPipelineInfo.pInputAssemblyState = &inputAssemblyInfo;
+  graphicsPipelineInfo.pTessellationState = nullptr;
+  graphicsPipelineInfo.pViewportState = &viewportStateInfo;
+  graphicsPipelineInfo.pRasterizationState = &rasterizationInfo;
+  graphicsPipelineInfo.pMultisampleState = &multisampleInfo;
+  graphicsPipelineInfo.pDepthStencilState = nullptr;
+  graphicsPipelineInfo.pColorBlendState = &colorBlendInfo;
+  graphicsPipelineInfo.pDynamicState = nullptr;
+  graphicsPipelineInfo.layout = pipelineLayout;
+  graphicsPipelineInfo.renderPass = renderPass;
+  graphicsPipelineInfo.subpass = 0;
+  graphicsPipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+  graphicsPipelineInfo.basePipelineIndex = -1;
+
+	VkPipeline graphicsPipeline;
+	error << vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &graphicsPipeline);
+
+	auto framebuffers = std::vector<VkFramebuffer>(imageCount);
+	for (std::size_t i = 0; i < imageCount; ++i) {
+		VkFramebufferCreateInfo framebufferInfo;
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    framebufferInfo.pNext = nullptr;
+    framebufferInfo.flags = 0;
+    framebufferInfo.renderPass = renderPass;
+    framebufferInfo.attachmentCount = 1;
+    framebufferInfo.pAttachments = &imageViews[i];
+    framebufferInfo.width = window_width;
+    framebufferInfo.height = window_height;
+    framebufferInfo.layers = 1;
+
+		error << vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]);
+	}
+
+
+
 	VkQueue queue;
 	vkGetDeviceQueue(device, 0, 0, &queue);
 
@@ -1017,6 +1113,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
 	// destroy vulkan
 	vkDeviceWaitIdle(device);
+	for (const auto& framebuffer : framebuffers)
+		vkDestroyFramebuffer(device, framebuffer, nullptr);
+	vkDestroyPipeline(device, graphicsPipeline, nullptr);
+	vkDestroyRenderPass(device, renderPass, nullptr);
+	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+	vkDestroyShaderModule(device, shaderVert, nullptr);
+	vkDestroyShaderModule(device, shaderFrag, nullptr);
 	for (const auto& imageView : imageViews)
 		vkDestroyImageView(device, imageView, nullptr);
 	vkDestroySwapchainKHR(device, swapchain, nullptr);
