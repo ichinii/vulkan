@@ -729,7 +729,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
 	// TODO: choose layers nicely. maybe eliminate unavailable layers
 	auto layers = std::vector<const char*>() = {
-		"VK_LAYER_KHRONOS_validation"
+		"VK_LAYER_KHRONOS_validation",
+		"VK_LAYER_MESA_overlay",
 	};
 
 	std::cout << "choosing layers" << std::endl;
