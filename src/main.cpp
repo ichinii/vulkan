@@ -1097,7 +1097,63 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 		error << vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]);
 	}
 
+	VkCommandPoolCreateInfo commandPoolInfo;
+	commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+  commandPoolInfo.pNext = nullptr;
+  commandPoolInfo.flags = 0;
+  commandPoolInfo.queueFamilyIndex = 0; // TODO: dependent
 
+	VkCommandPool commandPool;
+	error << vkCreateCommandPool(device, &commandPoolInfo, nullptr, &commandPool);
+
+	VkCommandBufferAllocateInfo commandBufferInfo;
+	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  commandBufferInfo.pNext = nullptr;
+  commandBufferInfo.commandPool = commandPool;
+  commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  commandBufferInfo.commandBufferCount = imageCount;
+
+	auto commandBuffers = std::vector<VkCommandBuffer>(imageCount);
+	error << vkAllocateCommandBuffers(device, &commandBufferInfo, commandBuffers.data());
+
+	VkCommandBufferBeginInfo beginInfo;
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  beginInfo.pNext = nullptr;
+  beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+  beginInfo.pInheritanceInfo = nullptr;
+
+	for (std::size_t i = 0; i < imageCount; ++i) {
+		error << vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
+
+		VkRenderPassBeginInfo renderPassBeginInfo;
+		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassBeginInfo.pNext = nullptr;
+    renderPassBeginInfo.renderPass = renderPass;
+    renderPassBeginInfo.framebuffer = framebuffers[i];
+    renderPassBeginInfo.renderArea.offset = {0, 0};
+    renderPassBeginInfo.renderArea.extent = {window_width, window_height};
+
+		VkClearValue clearValue = {0.f, 0.f, 0.f, 1.f};
+    renderPassBeginInfo.clearValueCount = 1;
+    renderPassBeginInfo.pClearValues = &clearValue;
+
+		vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+		vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+		vkCmdEndRenderPass(commandBuffers[i]);
+
+		error << vkEndCommandBuffer(commandBuffers[i]);
+	}
+
+	VkSemaphoreCreateInfo semaphoreInfo;
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+  semaphoreInfo.pNext = nullptr;
+  semaphoreInfo.flags = 0;
+
+	VkSemaphore semaphoreImageAvailable;
+	error << vkCreateSemaphore(device, &semaphoreInfo, nullptr, &semaphoreImageAvailable);
+	VkSemaphore semaphoreRenderingDone;;
+	error << vkCreateSemaphore(device, &semaphoreInfo, nullptr, &semaphoreRenderingDone);
 
 	VkQueue queue;
 	vkGetDeviceQueue(device, 0, 0, &queue);
@@ -1113,6 +1169,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
 	// destroy vulkan
 	vkDeviceWaitIdle(device);
+	vkDestroySemaphore(device, semaphoreRenderingDone, nullptr);
+	vkDestroySemaphore(device, semaphoreImageAvailable, nullptr);
+	vkFreeCommandBuffers(device, commandPool, imageCount, commandBuffers.data()); // implicit when pool gets destroyed
+	vkDestroyCommandPool(device, commandPool, nullptr);
 	for (const auto& framebuffer : framebuffers)
 		vkDestroyFramebuffer(device, framebuffer, nullptr);
 	vkDestroyPipeline(device, graphicsPipeline, nullptr);
