@@ -1,6 +1,7 @@
 conf = ScriptArgs["conf"] or "debug"
 build_dir = PathJoin("build", conf)
 src_dir = "src"
+res_dir = "res"
 obj_dir = PathJoin(build_dir, "obj")
 
 AddTool(function(s)
@@ -23,12 +24,28 @@ end)
 
 s = NewSettings()
 
+PseudoTarget("shader")
+shader_files = TableFlatten({
+	Collect(PathJoin(res_dir, "*.vert")),
+	Collect(PathJoin(res_dir, "*.frag"))
+})
+for i, file in ipairs(shader_files) do
+	local out = PathJoin(build_dir, file..".spv")
+	AddJob(out, "compiling shader '"..file.."' > '"..out.."'", "glslangValidator -V "..file.." -o "..out)
+	AddDependency(out, file)
+	AddDependency("shader", out)
+end
+
 src = CollectRecursive(PathJoin(src_dir, "*.cpp"))
 obj = Compile(s, src)
 bin = Link(s, "bin", obj)
-PseudoTarget("c", bin)
+PseudoTarget("compile", bin)
+PseudoTarget("c", "compile")
 
-AddJob("r", "running '"..bin.."'...", "./"..bin)
-AddDependency("r", bin)
+PseudoTarget("app", "compile", "shader")
 
-DefaultTarget("c")
+AddJob("run", "running '"..bin.."'...", "./"..bin)
+AddDependency("run", "app")
+PseudoTarget("r", "run")
+
+DefaultTarget("app")
