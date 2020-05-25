@@ -44,7 +44,7 @@ PseudoTarget("c", "compile")
 
 PseudoTarget("app", "compile", "shader")
 
-AddJob("run", "running '"..bin.."'...", "./"..bin)
+AddJob("run", "running '"..bin.."'...", "cd "..build_dir.." && ./"..PathFilename(bin))
 AddDependency("run", "app")
 PseudoTarget("r", "run")
 

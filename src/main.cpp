@@ -668,6 +668,35 @@ void dumpSurfaceCapabilities(const VkSurfaceCapabilitiesKHR& capabilities)
   	<< "\t\tsupportedUsageFlags:     " << capabilities.supportedUsageFlags << std::endl;
 }
 
+using ShaderCodeChar = std::uint32_t;
+using ShaderCode = std::vector<ShaderCodeChar>;
+
+ShaderCode readShaderFile(const std::filesystem::path& filepath)
+{
+	std::ifstream file(filepath, std::ios::binary | std::ios::ate);
+	assert(file);
+	std::size_t size = file.tellg();
+	assert(size % sizeof(ShaderCodeChar) == 0);
+	file.seekg(0);
+	auto content = ShaderCode(size / sizeof(ShaderCodeChar));
+	file.read(reinterpret_cast<char*>(content.data()), size);
+	return content;
+}
+
+VkShaderModule createShader(VkDevice device, const ShaderCode& code)
+{
+	VkShaderModuleCreateInfo shaderInfo;
+	shaderInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	shaderInfo.pNext = nullptr;
+	shaderInfo.flags = 0;
+	shaderInfo.codeSize = code.size() * sizeof(ShaderCode::value_type);
+	shaderInfo.pCode = code.data();
+
+	VkShaderModule shader;
+	vkCreateShaderModule(device, &shaderInfo, nullptr, &shader);
+	return shader;
+}
+
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
 	std::cout << std::boolalpha;
@@ -676,7 +705,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "Vulkan", nullptr, nullptr);
+	const std::size_t window_width = 1280, window_height = 720;
+	GLFWwindow* window = glfwCreateWindow(window_width, window_height, "Vulkan", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
 	VkApplicationInfo appInfo;
@@ -810,7 +840,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
   swapchainInfo.minImageCount = 2; // TODO: dependent
   swapchainInfo.imageFormat = VK_FORMAT_B8G8R8A8_UNORM; // TODO: dependent
   swapchainInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; // TODO: dependent
-  swapchainInfo.imageExtent = VkExtent2D{1280, 720}; // TODO: dependent
+  swapchainInfo.imageExtent = VkExtent2D{window_width, window_height}; // TODO: dependent
   swapchainInfo.imageArrayLayers = 1;
   swapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
   swapchainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -856,6 +886,122 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 		error << vkCreateImageView(device, &imageViewInfo, nullptr, &imageViews[i]);
 	}
 	std::cout << imageViews.size() << " image viws created" << std::endl;
+
+	auto shaderCodeVert = readShaderFile("res/shader.vert.spv");
+	auto shaderCodeFrag = readShaderFile("res/shader.frag.spv");
+
+	auto shaderVert = createShader(device, shaderCodeVert);
+	auto shaderFrag = createShader(device, shaderCodeFrag);
+
+	VkPipelineShaderStageCreateInfo shaderStageInfoVert;
+	shaderStageInfoVert.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	shaderStageInfoVert.pNext = nullptr;
+	shaderStageInfoVert.flags = 0;
+	shaderStageInfoVert.stage = VK_SHADER_STAGE_VERTEX_BIT;
+	shaderStageInfoVert.module = shaderVert;
+	shaderStageInfoVert.pName = "main";
+	shaderStageInfoVert.pSpecializationInfo = nullptr;
+
+	VkPipelineShaderStageCreateInfo shaderStageInfoFrag;
+	shaderStageInfoFrag.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	shaderStageInfoFrag.pNext = nullptr;
+	shaderStageInfoFrag.flags = 0;
+	shaderStageInfoFrag.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+	shaderStageInfoFrag.module = shaderFrag;
+	shaderStageInfoFrag.pName = "main";
+	shaderStageInfoFrag.pSpecializationInfo = nullptr;
+
+	auto shaderStageInfos = std::vector<VkPipelineShaderStageCreateInfo> {shaderStageInfoVert, shaderStageInfoFrag};
+
+	VkPipelineVertexInputStateCreateInfo vertexInputInfo;
+	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	vertexInputInfo.pNext = nullptr;
+	vertexInputInfo.flags = 0;
+	vertexInputInfo.vertexBindingDescriptionCount = 0;
+	vertexInputInfo.pVertexBindingDescriptions = nullptr;
+	vertexInputInfo.vertexAttributeDescriptionCount = 0;
+	vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
+	inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	inputAssemblyInfo.pNext = nullptr;
+	inputAssemblyInfo.flags = 0;
+	inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
+
+	VkViewport viewport;
+	viewport.x = 0;
+	viewport.y = 0;
+	viewport.width = window_width;
+	viewport.height = window_height;
+	viewport.minDepth = 0.f;
+	viewport.maxDepth = 1.f;
+
+	VkRect2D scissor;
+	scissor.offset = {0, 0};
+	scissor.extent = {window_width, window_height};
+
+	VkPipelineViewportStateCreateInfo viewportStateInfo;
+	viewportStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	viewportStateInfo.pNext = nullptr;
+	viewportStateInfo.flags = 0;
+	viewportStateInfo.viewportCount = 1;
+	viewportStateInfo.pViewports = &viewport;
+	viewportStateInfo.scissorCount = 1;
+	viewportStateInfo.pScissors = &scissor;
+
+	VkPipelineRasterizationStateCreateInfo rasterizationInfo;
+	rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+  rasterizationInfo.pNext = nullptr;
+  rasterizationInfo.flags = 0;
+  rasterizationInfo.depthClampEnable = VK_FALSE;
+  rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
+  rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
+  rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+  rasterizationInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+  rasterizationInfo.depthBiasEnable = VK_FALSE;
+  rasterizationInfo.depthBiasConstantFactor = 0.f;
+  rasterizationInfo.depthBiasClamp = 0.f;
+  rasterizationInfo.depthBiasSlopeFactor = 0.f;
+  rasterizationInfo.lineWidth = 1.f;
+
+	VkPipelineMultisampleStateCreateInfo multisamplingInfo;
+	multisamplingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+  multisamplingInfo.pNext = nullptr;
+  multisamplingInfo.flags = 0;
+  multisamplingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+  multisamplingInfo.sampleShadingEnable = VK_FALSE;
+  multisamplingInfo.minSampleShading = 1.f;
+  multisamplingInfo.pSampleMask = nullptr;
+  multisamplingInfo.alphaToCoverageEnable = VK_FALSE;
+  multisamplingInfo.alphaToOneEnable = VK_FALSE;
+
+	VkPipelineColorBlendAttachmentState colorBlendAttachment;
+	colorBlendAttachment.blendEnable = VK_TRUE;
+	colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+	colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+	colorBlendAttachment.colorWriteMask =
+		VK_COLOR_COMPONENT_R_BIT |
+		VK_COLOR_COMPONENT_G_BIT |
+		VK_COLOR_COMPONENT_B_BIT |
+		VK_COLOR_COMPONENT_A_BIT;
+
+	VkPipelineColorBlendStateCreateInfo colorBlendInfo;
+	colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	colorBlendInfo.pNext = nullptr;
+	colorBlendInfo.flags = 0;
+	colorBlendInfo.logicOpEnable = VK_FALSE;
+	colorBlendInfo.logicOp = VK_LOGIC_OP_NO_OP;
+	colorBlendInfo.attachmentCount = 1;
+	colorBlendInfo.pAttachments = &colorBlendAttachment;
+	colorBlendInfo.blendConstants[0] = 0.f;
+	colorBlendInfo.blendConstants[1] = 0.f;
+	colorBlendInfo.blendConstants[2] = 0.f;
+	colorBlendInfo.blendConstants[3] = 0.f;
 
 	VkQueue queue;
 	vkGetDeviceQueue(device, 0, 0, &queue);
