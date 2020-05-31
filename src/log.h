@@ -14,13 +14,14 @@ struct {                                                                        
 	void operator<< (VkResult error_code) {                                          \
 		if (error_code != VK_SUCCESS) {                                                \
 			std::cout << "fatal: vukan error (" << __FILE__ << ": " << __LINE__ << "): " \
-				<< error_code << " ("<< log::error_string[error_code] << ")" << std::endl; \
+				<< error_code << " ("<< debug::error_string[error_code] << ")" << std::endl; \
 			std::abort();                                                                \
 		}                                                                              \
 	}                                                                                \
 } unique_name; unique_name
 
-namespace log {
+namespace debug {
+
 extern std::unordered_map<std::underlying_type_t<VkResult>, std::string> error_string;
 extern std::unordered_map<std::underlying_type_t<VkPhysicalDeviceType>, std::string> physical_device_type_name;
 extern std::unordered_map<std::underlying_type_t<VkFormat>, std::string> format_string;

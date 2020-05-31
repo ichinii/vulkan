@@ -4,7 +4,7 @@
 
 using namespace std::string_literals;
 
-namespace log {
+namespace debug {
 
 std::unordered_map<std::underlying_type_t<VkResult>, std::string> error_string {
 	{VK_SUCCESS,                                            "VK_SUCCESS"},
@@ -666,4 +666,4 @@ void dump(const VkPresentModeKHR& mode)
 		std::cout << "\t" << mode << " (" << present_mode_string[mode] << ")" << std::endl;
 }
 
-}
+};
