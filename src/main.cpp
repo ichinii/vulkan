@@ -527,6 +527,8 @@ struct Vertex {
 auto updateUniformBuffer(VkDevice device, const std::vector<VkDeviceMemory>& memory, std::size_t imageIndex, std::chrono::milliseconds elapsedTime)
 {
 	auto ubo = UBO { glm::mat4{1.f} };
+	ubo.mvp = ubo.mvp * glm::perspective(70.f, 16.f/9.f, .1f, 100.f);
+	ubo.mvp = ubo.mvp * glm::lookAt(glm::vec3(0, 0, 2.), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 	ubo.mvp = glm::translate(ubo.mvp, glm::vec3(.2, 0, 0));
 	ubo.mvp = glm::scale(ubo.mvp, glm::vec3(.8, .8, 1));
 	ubo.mvp = glm::rotate(ubo.mvp, elapsedTime.count() / 1000.f, glm::vec3(0, 0, 1));
