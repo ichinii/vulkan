@@ -405,7 +405,6 @@ auto createBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize
 	
 	vkBindBufferMemory(device, buffer, memory, 0);
 
-	std::cout << "buffer " << buffer << ", " << "memory " << memory << std::endl;
 	return std::make_tuple(memory, buffer);
 }
 
@@ -416,13 +415,11 @@ auto createUniformBuffers(VkPhysicalDevice physicalDevice, VkDevice device, std:
 
 	auto uniformBuffers = std::vector<VkBuffer>(count);
 	auto uniformMemories = std::vector<VkDeviceMemory>(count);
-	std::cout << uniformMemories.size() << std::endl;
 
 	for (std::size_t i = 0; i < count; ++i) {
 		auto [memory, buffer] = createBuffer(physicalDevice, device, bufferSize,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		std::cout << "buffer " << buffer << ", " << "memory " << memory << std::endl;
 
 		uniformBuffers[i] = buffer;
 		uniformMemories[i] = memory;
@@ -529,22 +526,25 @@ struct Vertex {
 
 auto updateUniformBuffer(VkDevice device, const std::vector<VkDeviceMemory>& memory, std::size_t imageIndex, std::chrono::milliseconds elapsedTime)
 {
-	std::cout << memory.size() << " " << imageIndex << memory[imageIndex] << std::endl;
 	auto ubo = UBO { glm::mat4{1.f} };
-	ubo.mvp = glm::scale(ubo.mvp, glm::vec3(2, 2, 1));
-	ubo.mvp = glm::rotate(ubo.mvp, glm::pi<float>() * .5f, glm::vec3(0, 0, 1));
 	ubo.mvp = glm::translate(ubo.mvp, glm::vec3(.2, 0, 0));
+	ubo.mvp = glm::scale(ubo.mvp, glm::vec3(.8, .8, 1));
+	ubo.mvp = glm::rotate(ubo.mvp, elapsedTime.count() / 1000.f, glm::vec3(0, 0, 1));
 	void* data;
 	vkMapMemory(device, memory[imageIndex], 0, sizeof(ubo), 0, &data);
 	std::memcpy(data, &ubo, sizeof(ubo));
 	vkUnmapMemory(device, memory[imageIndex]);
 }
 
-auto updateDescriptors(VkDevice device, const std::vector<VkBuffer>& uniformBuffers, const std::vector<VkDeviceMemory>&  uniformMemory, std::vector<VkDescriptorSet>& descriptorSets, std::size_t count, std::chrono::milliseconds elapsedTime)
+auto updateUniformBuffers(VkDevice device, const std::vector<VkDeviceMemory>& memories, std::chrono::milliseconds elapsedTime)
+{
+	for (std::size_t i = 0; i < memories.size(); ++i)
+		updateUniformBuffer(device, memories, i, elapsedTime);
+}
+
+auto updateDescriptors(VkDevice device, const std::vector<VkBuffer>& uniformBuffers, std::vector<VkDescriptorSet>& descriptorSets, std::size_t count)
 {
 	for (std::size_t i = 0; i < count; ++i) {
-		updateUniformBuffer(device, uniformMemory, i, elapsedTime);
-
 		VkDescriptorBufferInfo bufferInfo;
 		bufferInfo.buffer = uniformBuffers[i];
 		bufferInfo.offset = 0;
@@ -610,11 +610,16 @@ auto copyBuffer(VkDevice device, VkBuffer src, VkBuffer dst, std::size_t size, V
 
 auto createVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkCommandPool commandPool, VkQueue queue)
 {
-	auto vertices = std::vector<Vertex> {
-		{{-.5, .5, 0}, {1, 1, 0}},
-		{{.5, .5, 0}, {0, 1, 1}},
-		{{0, -.5, 0}, {1, 0, 1}}
-	};
+	auto vertices = std::vector<Vertex>();
+	auto divisions = 32.f;
+	vertices.push_back(Vertex{{0, 0, 0}, {0, 1, 0}});
+	for (int i = 0; i < divisions; ++i) {
+		auto pi2 = 2.f * glm::pi<float>();
+		auto a = i / (divisions - 1.f) * pi2;
+		auto pos = glm::vec3(glm::cos(a), glm::sin(a), 0.f);
+		auto color = glm::vec3(glm::abs(glm::sin(a)), 0.f, glm::abs(glm::sin(a + glm::pi<float>() * .5f)));
+		vertices.push_back(Vertex{pos, color});
+	}
 
 	auto size = sizeof(Vertex) * vertices.size();
 
@@ -637,7 +642,7 @@ auto createVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkComm
 	vkFreeMemory(device, stagingMemory, nullptr);
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-	return std::make_tuple(memory, buffer);
+	return std::make_tuple(memory, buffer, vertices.size());
 }
 
 auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout pipelineLayout, VkShaderModule shaderVert, VkShaderModule shaderFrag)
@@ -678,7 +683,7 @@ auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout p
 	inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssemblyInfo.pNext = nullptr;
 	inputAssemblyInfo.flags = 0;
-	inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
 	inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
 
 	VkViewport viewport;
@@ -710,7 +715,7 @@ auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout p
   rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
   rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
   rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-  rasterizationInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+  rasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
   rasterizationInfo.depthBiasEnable = VK_FALSE;
   rasterizationInfo.depthBiasConstantFactor = 0.f;
   rasterizationInfo.depthBiasClamp = 0.f;
@@ -841,7 +846,7 @@ auto createCommandBuffers(VkDevice device, VkCommandPool commandPool, std::size_
 	return commandBuffers;
 }
 
-auto fillCommandBuffers(const std::vector<VkCommandBuffer>& commandBuffers, const std::vector<VkFramebuffer>& framebuffers, VkRenderPass renderPass, VkPipeline graphicsPipeline, VkPipelineLayout pipelineLayout,  const std::vector<VkBuffer>& buffers, const std::vector<VkDescriptorSet>& descriptorSets)
+auto fillCommandBuffers(const std::vector<VkCommandBuffer>& commandBuffers, const std::vector<VkFramebuffer>& framebuffers, VkRenderPass renderPass, VkPipeline graphicsPipeline, VkPipelineLayout pipelineLayout,  const std::vector<VkBuffer>& buffers, const std::vector<VkDescriptorSet>& descriptorSets, std::size_t verticesCount)
 {
 	VkCommandBufferBeginInfo beginInfo;
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -883,7 +888,7 @@ auto fillCommandBuffers(const std::vector<VkCommandBuffer>& commandBuffers, cons
 		vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
 		vkCmdSetViewport(commandBuffers[i], 0, 1, &viewport);
 		vkCmdSetScissor(commandBuffers[i], 0, 1, &scissor);
-		vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+		vkCmdDraw(commandBuffers[i], verticesCount, 1, 0, 0);
 		vkCmdEndRenderPass(commandBuffers[i]);
 
 		error << vkEndCommandBuffer(commandBuffers[i]);
@@ -944,14 +949,12 @@ auto render(VkDevice device, VkSwapchainKHR swapchain, VkQueue queue, const std:
 	error << vkQueuePresentKHR(queue, &presentInfo);
 }
 
-// void update(VkDevice device, std::chrono::milliseconds deltaTime, GLFWwindow* window, VkSurfaceKHR surface, VkSwapchainKHR* swapchain, std::vector<VkImageView>* imageViews, VkRenderPass* renderPass, std::vector<VkFramebuffer>* frameBuffers, VkCommandPool* commandPool, std::vector<VkCommandBuffer>* commandBuffers, VkShaderModule shaderVert, VkShaderModule shaderFrag, VkPipelineLayout* pipelineLayout, VkPipeline* graphicsPipeline)
+// void update(VkDevice device, std::chrono::milliseconds deltaTime, GLFWwindow* window, VkSurfaceKHR surface, VkSwapchainKHR* swapchain, std::vector<VkImageView>* imageViews, VkRenderPass* renderPass, std::vector<VkFramebuffer>* frameBuffers, VkCommandPool* commandPool, std::vector<VkCommandBuffer>* commandBuffers, VkShaderModule shaderVert, VkShaderModule shaderFrag, VkPipelineLayout* pipelineLayout, VkPipeline* graphicsPipeline, const std::vector<VkDescriptorSetLayout>& descriptorLayouts)
 // {
 // 	int width, height;
 // 	glfwGetWindowSize(window, &width, &height);
 //
 // 	if (windowSize != glm::uvec2(width, height)) {
-// 		std::cout << "update" << std::endl;
-//
 // 		vkDeviceWaitIdle(device);
 //
 // 		windowSize.x = glm::clamp(width, 0, static_cast<int>(initialWindowSize.x));
@@ -976,7 +979,7 @@ auto render(VkDevice device, VkSwapchainKHR swapchain, VkQueue queue, const std:
 // 		*commandPool = createCommandPool(device);
 // 		*commandBuffers = createCommandBuffers(device, *commandPool, imageViews->size());
 //
-// 		*pipelineLayout = createPipelineLayout(device);
+// 		*pipelineLayout = createPipelineLayout(device, descriptorLayouts);
 // 		*graphicsPipeline = createPipeline(device, *renderPass, *pipelineLayout, shaderVert, shaderFrag);
 // 	}
 // }
@@ -985,7 +988,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
 	std::cout << std::boolalpha;
 	auto startTime = cloc::now();
-	auto elapsedTime = 0ms;
 
 	initGlfw();
 	auto instance = createInstance();
@@ -1011,26 +1013,28 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
 	auto descriptorPool = createDescriptorPool(device, imageViews.size());
 	auto descriptorSets = createDescriptorSets(device, descriptorLayouts, descriptorPool, imageViews.size());
-
-	updateDescriptors(device, uniformBuffers, uniformMemory, descriptorSets, imageViews.size(), elapsedTime);
+	updateDescriptors(device, uniformBuffers, descriptorSets, imageViews.size());
 
 	auto queue = getQueue(device);
+
+	auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(device, physicalDevice, commandPool, queue);
+	fillCommandBuffers(commandBuffers, frameBuffers, renderPass, graphicsPipeline, pipelineLayout, {vertexBuffer}, descriptorSets, verticesCount);
+	auto [semaphoreImageAvailable, semaphoreRenderingDone] = createSemaphores(device);
 
 	// we initialzed vulkan (yay)
 	std::cout << "hello vulkan" << std::endl;
 
-	auto [vertexBufferMemory, vertexBuffer] = createVertexBuffer(device, physicalDevice, commandPool, queue);
-	fillCommandBuffers(commandBuffers, frameBuffers, renderPass, graphicsPipeline, pipelineLayout, {vertexBuffer}, descriptorSets);
-	auto [semaphoreImageAvailable, semaphoreRenderingDone] = createSemaphores(device);
-
 	while (!glfwWindowShouldClose(window)) {
+		auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(cloc::now() - startTime);
+
 		render(device, swapchain, queue, commandBuffers, semaphoreImageAvailable, semaphoreRenderingDone);
 
 		vkDeviceWaitIdle(device);
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_Q))
 			glfwSetWindowShouldClose(window, true);
-		// update(device, 0ms, window, surface, &swapchain, &imageViews, &renderPass, &frameBuffers, &commandPool, &commandBuffers, shaderVert, shaderFrag, &pipelineLayout, &graphicsPipeline);
+		// update(device, 0ms, window, surface, &swapchain, &imageViews, &renderPass, &frameBuffers, &commandPool, &commandBuffers, shaderVert, shaderFrag, &pipelineLayout, &graphicsPipeline, descriptorLayouts);
+		updateUniformBuffers(device, uniformMemory, elapsedTime);
 	}
 
 	// destroy vulkan
