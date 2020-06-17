@@ -27,6 +27,7 @@ extern std::unordered_map<std::underlying_type_t<VkPhysicalDeviceType>, std::str
 extern std::unordered_map<std::underlying_type_t<VkFormat>, std::string> format_string;
 extern std::unordered_map<std::underlying_type_t<VkPresentModeKHR>, std::string> present_mode_string;
 extern std::unordered_map<std::underlying_type_t<VkColorSpaceKHR>, std::string> color_space_string;
+extern std::unordered_map<std::underlying_type_t<VkColorSpaceKHR>, std::string> color_space_string;
 
 extern void dump(const VkPhysicalDeviceLimits& limits);
 extern void dump(const VkPhysicalDeviceFeatures& features);
@@ -36,6 +37,8 @@ extern void dump(const VkExtensionProperties &extension);
 extern void dump(const VkSurfaceCapabilitiesKHR& capabilities);
 extern void dump(const VkSurfaceFormatKHR& format);
 extern void dump(const VkPresentModeKHR& mode);
+extern void dump(const VkMemoryRequirements& requirements);
+extern void dump(const VkMemoryPropertyFlags& bits);
 
 template <typename T>
 inline void dump(std::string name, const std::vector<T>& container) 

@@ -663,7 +663,29 @@ void dump(const VkSurfaceFormatKHR& format)
 
 void dump(const VkPresentModeKHR& mode)
 {
-		std::cout << "\t" << mode << " (" << present_mode_string[mode] << ")" << std::endl;
+	std::cout << "\t" << mode << " (" << present_mode_string[mode] << ")" << std::endl;
+}
+
+void dump(const VkMemoryRequirements& requirements)
+{
+	std::cout << "\t" << "memory requirements" << std::endl
+		<< "\t\tsize:           " << requirements.size << std::endl
+		<< "\t\talignment:      " << requirements.alignment << std::endl
+		<< "\t\tVkMemoryPropertyFlags: " << requirements.memoryTypeBits << std::endl;
+	dump(requirements.memoryTypeBits);
+}
+
+void dump(const VkMemoryPropertyFlags& bits)
+{
+	std::cout
+		<< "\t\t\tVK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT:        " << (0 != (bits & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) << std::endl
+		<< "\t\t\tVK_MEMORY_PROPERTY_HOST_VISIBLE_BIT:        " << (0 != (bits & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) << std::endl
+		<< "\t\t\tVK_MEMORY_PROPERTY_HOST_COHERENT_BIT:       " << (0 != (bits & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) << std::endl
+		<< "\t\t\tVK_MEMORY_PROPERTY_HOST_CACHED_BIT:         " << (0 != (bits & VK_MEMORY_PROPERTY_HOST_CACHED_BIT)) << std::endl
+		<< "\t\t\tVK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT:    " << (0 != (bits & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT)) << std::endl
+		<< "\t\t\tVK_MEMORY_PROPERTY_PROTECTED_BIT:           " << (0 != (bits & VK_MEMORY_PROPERTY_PROTECTED_BIT)) << std::endl
+		<< "\t\t\tVK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD: " << (0 != (bits & VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD)) << std::endl
+		<< "\t\t\tVK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD: " << (0 != (bits & VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD)) << std::endl;
 }
 
 };

@@ -5,9 +5,10 @@ res_dir = "res"
 obj_dir = PathJoin(build_dir, "obj")
 
 AddTool(function(s)
+	s.cc.flags:Add('-g')
 	s.cc.flags:Add("-Wall")
 	s.cc.flags:Add("-Wextra")
-	s.cc.flags_cxx:Add("--std=c++17")
+	s.cc.flags_cxx:Add("--std=c++2a")
 	s.cc.includes:Add(src_dir)
 	s.link.libs:Add("vulkan")
 	s.link.libs:Add("glfw")
