@@ -59,7 +59,7 @@ auto getExtensionProperties()
 
 auto getExtensions()
 {
-	auto extensionProperties = getExtensionProperties;
+	auto extensionProperties = getExtensionProperties();
 
 	// TODO: choose extensions
 	auto extensions = std::vector<const char*>() = {};
@@ -527,7 +527,7 @@ struct Vertex {
 auto updateUniformBuffer(VkDevice device, const std::vector<VkDeviceMemory>& memory, std::size_t imageIndex, std::chrono::milliseconds elapsedTime)
 {
 	auto ubo = UBO { glm::mat4{1.f} };
-	ubo.mvp = ubo.mvp * glm::perspective(70.f, 16.f/9.f, .1f, 100.f);
+	ubo.mvp = ubo.mvp * glm::perspective(70.f, static_cast<float>(windowSize.x) / windowSize.y, .1f, 100.f);
 	ubo.mvp = ubo.mvp * glm::lookAt(glm::vec3(0, 0, 2.), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 	ubo.mvp = glm::translate(ubo.mvp, glm::vec3(.2, 0, 0));
 	ubo.mvp = glm::scale(ubo.mvp, glm::vec3(.8, .8, 1));
@@ -867,7 +867,7 @@ auto fillCommandBuffers(const std::vector<VkCommandBuffer>& commandBuffers, cons
     renderPassBeginInfo.renderArea.offset = {0, 0};
     renderPassBeginInfo.renderArea.extent = {windowSize.x, windowSize.y};
 
-		VkClearValue clearValue = {0.f, 0.f, 0.f, 1.f};
+		VkClearValue clearValue = {{{.01f, .06f, .1f, 1.f}}};
     renderPassBeginInfo.clearValueCount = 1;
     renderPassBeginInfo.pClearValues = &clearValue;
 
@@ -922,7 +922,7 @@ auto getQueue(VkDevice device)
 auto render(VkDevice device, VkSwapchainKHR swapchain, VkQueue queue, const std::vector<VkCommandBuffer>& commandBuffers, VkSemaphore semaphoreImageAvailable, VkSemaphore semaphoreRenderingDone)
 {
 	std::uint32_t imageIndex;
-	error << vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<std::uint64_t>::max(), semaphoreImageAvailable, VK_NULL_HANDLE, &imageIndex);
+	auto result = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<std::uint64_t>::max(), semaphoreImageAvailable, VK_NULL_HANDLE, &imageIndex);
 
 	VkSubmitInfo submitInfo;
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -951,39 +951,23 @@ auto render(VkDevice device, VkSwapchainKHR swapchain, VkQueue queue, const std:
 	error << vkQueuePresentKHR(queue, &presentInfo);
 }
 
-// void update(VkDevice device, std::chrono::milliseconds deltaTime, GLFWwindow* window, VkSurfaceKHR surface, VkSwapchainKHR* swapchain, std::vector<VkImageView>* imageViews, VkRenderPass* renderPass, std::vector<VkFramebuffer>* frameBuffers, VkCommandPool* commandPool, std::vector<VkCommandBuffer>* commandBuffers, VkShaderModule shaderVert, VkShaderModule shaderFrag, VkPipelineLayout* pipelineLayout, VkPipeline* graphicsPipeline, const std::vector<VkDescriptorSetLayout>& descriptorLayouts)
+// auto recreateSwapChain(VkDevice device, VkSurfaceKHR surface, VkSwapchainKHR* swapchain, std::vector<VkImageView>* imageViews, VkRenderPass* renderPass, std::vector<VkFramebuffer>* frameBuffers, VkCommandPool* commandPool, std::vector<VkCommandBuffer>* commandBuffers)
 // {
-// 	int width, height;
-// 	glfwGetWindowSize(window, &width, &height);
+// 	vkFreeCommandBuffers(device, *commandPool, imageViews->size(), commandBuffers->data()); // implicit when pool gets destroyed
+// 	vkDestroyCommandPool(device, *commandPool, nullptr);
+// 	for (const auto& framebuffer : *frameBuffers)
+// 		vkDestroyFramebuffer(device, framebuffer, nullptr);
+// 	vkDestroyRenderPass(device, *renderPass, nullptr);
+// 	for (const auto& imageView : *imageViews)
+// 		vkDestroyImageView(device, imageView, nullptr);
+// 	vkDestroySwapchainKHR(device, *swapchain, nullptr);
 //
-// 	if (windowSize != glm::uvec2(width, height)) {
-// 		vkDeviceWaitIdle(device);
-//
-// 		windowSize.x = glm::clamp(width, 0, static_cast<int>(initialWindowSize.x));
-// 		windowSize.y = glm::clamp(height, 0, static_cast<int>(initialWindowSize.y));
-//
-// 		vkDestroyPipeline(device, *graphicsPipeline, nullptr);
-// 		vkDestroyPipelineLayout(device, *pipelineLayout, nullptr);
-//
-// 		vkFreeCommandBuffers(device, *commandPool, imageViews->size(), commandBuffers->data()); // implicit when pool gets destroyed
-// 		vkDestroyCommandPool(device, *commandPool, nullptr);
-// 		for (const auto& framebuffer : *frameBuffers)
-// 			vkDestroyFramebuffer(device, framebuffer, nullptr);
-// 		vkDestroyRenderPass(device, *renderPass, nullptr);
-// 		for (const auto& imageView : *imageViews)
-// 			vkDestroyImageView(device, imageView, nullptr);
-// 		vkDestroySwapchainKHR(device, *swapchain, nullptr);
-//
-// 		*swapchain = createSwapChain(device, surface);
-// 		*imageViews = createImageViews(device, *swapchain);
-// 		*renderPass = createRenderPass(device);
-// 		*frameBuffers = createFrameBuffers(device, *imageViews, *renderPass);
-// 		*commandPool = createCommandPool(device);
-// 		*commandBuffers = createCommandBuffers(device, *commandPool, imageViews->size());
-//
-// 		*pipelineLayout = createPipelineLayout(device, descriptorLayouts);
-// 		*graphicsPipeline = createPipeline(device, *renderPass, *pipelineLayout, shaderVert, shaderFrag);
-// 	}
+// 	*swapchain = createSwapChain(device, surface);
+// 	*imageViews = createImageViews(device, *swapchain);
+// 	*renderPass = createRenderPass(device);
+// 	*frameBuffers = createFrameBuffers(device, *imageViews, *renderPass);
+// 	*commandPool = createCommandPool(device);
+// 	*commandBuffers = createCommandBuffers(device, *commandPool, imageViews->size());
 // }
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
@@ -1005,7 +989,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	auto commandPool = createCommandPool(device);
 	auto commandBuffers = createCommandBuffers(device, commandPool, imageViews.size());
 
-	auto [uniformMemory, uniformBuffers] = createUniformBuffers(physicalDevice, device, imageViews.size());
+	auto [uniformMemories, uniformBuffers] = createUniformBuffers(physicalDevice, device, imageViews.size());
 	auto descriptorLayout = createDescriptorSetLayout(device);
 	auto descriptorLayouts = std::vector<VkDescriptorSetLayout>(imageViews.size(), descriptorLayout);
 
@@ -1029,14 +1013,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	while (!glfwWindowShouldClose(window)) {
 		auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(cloc::now() - startTime);
 
+		updateUniformBuffers(device, uniformMemories, elapsedTime);
 		render(device, swapchain, queue, commandBuffers, semaphoreImageAvailable, semaphoreRenderingDone);
 
-		vkDeviceWaitIdle(device);
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_Q))
 			glfwSetWindowShouldClose(window, true);
-		// update(device, 0ms, window, surface, &swapchain, &imageViews, &renderPass, &frameBuffers, &commandPool, &commandBuffers, shaderVert, shaderFrag, &pipelineLayout, &graphicsPipeline, descriptorLayouts);
-		updateUniformBuffers(device, uniformMemory, elapsedTime);
+		vkDeviceWaitIdle(device);
 	}
 
 	// destroy vulkan
@@ -1059,7 +1042,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	vkDestroyDescriptorSetLayout(device, descriptorLayout, nullptr);
 	for (const auto& buffer : uniformBuffers)
 		vkDestroyBuffer(device, buffer, nullptr);
-	for (const auto& memory : uniformMemory)
+	for (const auto& memory : uniformMemories)
 		vkFreeMemory(device, memory, nullptr);
 
 	vkFreeCommandBuffers(device, commandPool, imageViews.size(), commandBuffers.data()); // implicit when pool gets destroyed
