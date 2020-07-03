@@ -19,5 +19,7 @@ public:
 	std::vector<VkFramebuffer> frameBuffers;
 	VkCommandPool commandPool;
 	std::vector<VkCommandBuffer> commandBuffers;
+
+	VkQueue queue;
 };
 

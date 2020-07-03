@@ -358,6 +358,13 @@ auto createCommandBuffers(VkDevice device, VkCommandPool commandPool, std::size_
 	return commandBuffers;
 }
 
+auto getQueue(VkDevice device)
+{
+	VkQueue queue;
+	vkGetDeviceQueue(device, 0, 0, &queue);
+	return queue;
+}
+
 Instance::Instance()
 {
 	window = createWindow();
@@ -372,6 +379,8 @@ Instance::Instance()
 	frameBuffers = createFrameBuffers(device, imageViews, renderPass);
 	commandPool = createCommandPool(device);
 	commandBuffers = createCommandBuffers(device, commandPool, imageViews.size());
+
+	queue = getQueue(device);
 }
 
 Instance::~Instance()

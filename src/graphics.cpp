@@ -1,5 +1,6 @@
 #include "graphics.h"
 #include "log.h"
+#include <cstring>
 
 int findMemoryType(VkPhysicalDevice physicalDevice, VkMemoryRequirements requirements, VkMemoryPropertyFlags memoryFlags)
 {
@@ -56,4 +57,44 @@ std::tuple<VkDeviceMemory, VkBuffer> createBuffer(VkPhysicalDevice physicalDevic
 	vkBindBufferMemory(device, buffer, memory, 0);
 
 	return std::make_tuple(memory, buffer);
+}
+
+VkCommandBuffer  beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool) {
+	VkCommandBufferAllocateInfo commandBufferInfo;
+	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  commandBufferInfo.pNext = nullptr;
+  commandBufferInfo.commandPool = commandPool;
+  commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  commandBufferInfo.commandBufferCount = 1;
+	VkCommandBuffer commandBuffer;
+	error << vkAllocateCommandBuffers(device, &commandBufferInfo, &commandBuffer);
+
+	VkCommandBufferBeginInfo beginInfo;
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  beginInfo.pNext = nullptr;
+  beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+  beginInfo.pInheritanceInfo = nullptr;
+
+	error << vkBeginCommandBuffer(commandBuffer, &beginInfo);
+	return commandBuffer;
+}
+
+void endSingleTimeCommands(VkDevice device, VkCommandBuffer commandBuffer, VkCommandPool commandPool, VkQueue queue) {
+	error << vkEndCommandBuffer(commandBuffer);
+
+	VkSubmitInfo submitInfo;
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = nullptr;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = nullptr;
+	submitInfo.pWaitDstStageMask = nullptr;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = nullptr;
+
+	error << vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(queue);
+
+	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
