@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdint>
 #include <vector>
+#include <locale>
 #include <fstream>
 #include <filesystem>
 #include <iostream>

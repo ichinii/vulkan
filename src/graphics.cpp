@@ -1,54 +1,59 @@
 #include "graphics.h"
-#include <glm/ext/scalar_constants.hpp>
+#include "log.h"
 
-PlanarRenderer::PlanarRenderer()
+int findMemoryType(VkPhysicalDevice physicalDevice, VkMemoryRequirements requirements, VkMemoryPropertyFlags memoryFlags)
 {
-
-}
-
-PlanarRenderer::~PlanarRenderer()
-{
-
-}
-
-void PlanarRenderer::clear()
-{
-	m_vertices.clear();
-}
-
-std::vector<Vertex> PlanarRenderer::flush()
-{
-	return std::move(m_vertices);
-}
-
-void PlanarRenderer::setTransform(glm::mat4 modelMatrix)
-{
-
-}
-
-void PlanarRenderer::drawTriangle(
-	glm::vec2 p0, glm::vec3 c0, glm::vec2 t0,
-	glm::vec2 p1, glm::vec3 c1, glm::vec2 t1,
-	glm::vec2 p2, glm::vec3 c2, glm::vec2 t2)
-{
-	m_vertices.emplace_back(p0, c0, t0);
-	m_vertices.emplace_back(p1, c1, t1);
-	m_vertices.emplace_back(p2, c2, t2);
-}
-
-void PlanarRenderer::drawCircle(glm::vec2 p, float r, glm::vec3 c)
-{
-	auto divisions = 32.f;
-	for (int i = 0; i < divisions; ++i) {
-		auto pi2 = 2.f * glm::pi<float>();
-		auto a = i / (divisions - 1.f) * pi2;
-		auto a2 = (i+1) / (divisions - 1.f) * pi2;
-		auto dir = glm::vec2(glm::cos(a), glm::sin(a));
-		auto dir2 = glm::vec2(glm::cos(a2), glm::sin(a2));
-		auto pos = r * dir;
-		auto pos2 = r * dir2;
-		m_vertices.push_back(Vertex{p, c * .5f, {.5, .5}});
-		m_vertices.push_back(Vertex{p + pos, c, dir * .5f + .5f});
-		m_vertices.push_back(Vertex{p + pos2, c, dir2 * .5f + .5f});
+	int memoryIndex = -1;
+	VkPhysicalDeviceMemoryProperties memoryProperties;
+	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+	for (std::size_t i = 0; i < memoryProperties.memoryTypeCount; ++i) {
+		auto types = memoryProperties.memoryTypes[i];
+		auto enabled = 0 != (requirements.memoryTypeBits & (1 << i));
+		auto matching = ((memoryFlags & types.propertyFlags) == memoryFlags);
+		// std::cout << "\tmemory properties" << std::endl
+		// 	<< "\t\theap index: " << types.heapIndex << std::endl
+		// 	<< "\t\tenabled: " << enabled << std::endl
+		// 	<< "\t\tmatching requirements: " << matching << std::endl;
+		// debug::dump(memoryProperties.memoryTypes[i].propertyFlags);
+		
+		if (memoryIndex == -1 && enabled && matching)
+			memoryIndex = i;
 	}
+	assert(memoryIndex != -1);
+	return memoryIndex;
+}
+
+std::tuple<VkDeviceMemory, VkBuffer> createBuffer(VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryFlags)
+{
+	VkBufferCreateInfo bufferInfo;
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  bufferInfo.pNext = nullptr;
+  bufferInfo.flags = 0;
+  bufferInfo.size = size;
+  bufferInfo.usage = usage;
+  bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  bufferInfo.queueFamilyIndexCount = 0;
+  bufferInfo.pQueueFamilyIndices = nullptr;
+
+	VkBuffer buffer;
+	error << vkCreateBuffer(device, &bufferInfo, nullptr, &buffer);
+
+	VkMemoryRequirements requirements;
+	vkGetBufferMemoryRequirements(device, buffer, &requirements);
+	// debug::dump(requirements);
+
+	int memoryIndex = findMemoryType(physicalDevice, requirements, memoryFlags);
+
+	VkMemoryAllocateInfo memoryInfo;
+	memoryInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  memoryInfo.pNext = nullptr;
+	memoryInfo.allocationSize = requirements.size; 
+  memoryInfo.memoryTypeIndex = memoryIndex;
+
+	VkDeviceMemory memory;
+	error << vkAllocateMemory(device, &memoryInfo, nullptr, &memory);
+	
+	vkBindBufferMemory(device, buffer, memory, 0);
+
+	return std::make_tuple(memory, buffer);
 }
