@@ -227,6 +227,20 @@ Texture Texture::fromImage(const Instance& instance, Image image) {
 	return texture;
 }
 
+Texture::Texture(Texture&& other)
+	: device(other.device)
+	, views(std::move(other.views))
+{
+	std::swap(memory, other.memory);
+	std::swap(image, other.image);
+	std::swap(sampler, other.sampler);
+}
+
+Texture& Texture::operator= (Texture&& other)
+{
+
+}
+
 Texture::~Texture()
 {
 	vkDestroySampler(device, sampler, nullptr);

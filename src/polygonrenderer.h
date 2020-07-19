@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pipeline.h"
+#include "polygonpipeline.h"
 
 class PolygonRenderer {
 public:
@@ -8,7 +8,7 @@ public:
 	~PolygonRenderer();
 
 	void clear();
-	std::vector<Vertex> flush();
+	PolygonPipeline::Vertices flush();
 
 	void drawTriangle(
 		glm::vec2 p0, glm::vec3 c0, glm::vec2 t0,
@@ -17,5 +17,5 @@ public:
 	void drawCircle(glm::vec2 p, float r, glm::vec3 c);
 
 private:
-	std::vector<Vertex> m_vertices;
+	PolygonPipeline::Vertices m_vertices;
 };

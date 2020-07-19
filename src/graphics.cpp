@@ -59,7 +59,7 @@ std::tuple<VkDeviceMemory, VkBuffer> createBuffer(VkPhysicalDevice physicalDevic
 	return std::make_tuple(memory, buffer);
 }
 
-VkCommandBuffer  beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool) {
+VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool) {
 	VkCommandBufferAllocateInfo commandBufferInfo;
 	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   commandBufferInfo.pNext = nullptr;

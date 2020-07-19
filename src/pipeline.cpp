@@ -2,50 +2,24 @@
 #include "shader.h"
 #include <tuple>
 
-auto createUniformBuffers(VkPhysicalDevice physicalDevice, VkDevice device, std::size_t count)
-{
-	VkDeviceSize bufferSize = sizeof(UBO);
-	assert(bufferSize > 0);
-
-	auto uniformBuffers = std::vector<VkBuffer>(count);
-	auto uniformMemories = std::vector<VkDeviceMemory>(count);
-
-	for (std::size_t i = 0; i < count; ++i) {
-		auto [memory, buffer] = createBuffer(physicalDevice, device, bufferSize,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-		uniformBuffers[i] = buffer;
-		uniformMemories[i] = memory;
+auto getUniformBindings(const Uniforms& uniforms) {
+	auto bindings = std::vector<VkDescriptorSetLayoutBinding>(uniforms.size());
+	for (std::size_t i = 0; i < uniforms.size(); ++i) {
+		auto& uniform  = uniforms[i];
+		auto& binding = bindings[i];
+		binding.binding = uniform.binding;
+		binding.descriptorType = uniform.type;
+		binding.descriptorCount = 1;
+		binding.stageFlags = uniform.shaderStage;
+		binding.pImmutableSamplers = nullptr; // Optional
 	}
-
-	return std::make_tuple(uniformMemories, uniformBuffers);
+	return bindings;
 }
 
-auto createDescriptorSetLayout(VkDevice device)
+auto createDescriptorSetLayout(VkDevice device, const Uniforms& uniforms)
 {
-	VkDescriptorSetLayoutBinding uboLayoutBinding;
-	uboLayoutBinding.binding = 0;
-	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	uboLayoutBinding.descriptorCount = 1;
-	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+	auto bindings = getUniformBindings(uniforms);
 
-	VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-	samplerLayoutBinding.binding = 1;
-	samplerLayoutBinding.descriptorCount = 1;
-	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	samplerLayoutBinding.pImmutableSamplers = nullptr;
-	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	VkDescriptorSetLayoutBinding samplerLayoutBinding2{};
-	samplerLayoutBinding2.binding = 2;
-	samplerLayoutBinding2.descriptorCount = 1;
-	samplerLayoutBinding2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	samplerLayoutBinding2.pImmutableSamplers = nullptr;
-	samplerLayoutBinding2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	auto bindings = std::array{uboLayoutBinding, samplerLayoutBinding, samplerLayoutBinding2};
 	VkDescriptorSetLayoutCreateInfo layoutInfo;
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layoutInfo.pNext = nullptr;
@@ -86,7 +60,33 @@ auto createPipelineLayout(VkDevice device, const std::vector<VkDescriptorSetLayo
 	return pipelineLayout;
 }
 
-auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout pipelineLayout, VkShaderModule shaderVert, VkShaderModule shaderFrag)
+auto getAttributeBindings(const Attributes& attributes)
+{
+	auto bindings = std::vector<VkVertexInputAttributeDescription>(attributes.size());
+
+	for (std::size_t i = 0; i < attributes.size(); ++i) {
+		auto& binding = bindings[i];
+		auto& attribute = attributes[i];
+
+		binding.location = attribute.location;
+		binding.binding = attribute.binding;
+		binding.format = attribute.format;
+		binding.offset = attribute.offset;
+	}
+
+	return bindings;
+}
+
+auto getBindingInfo(int vertexSize)
+{
+	VkVertexInputBindingDescription inputBinding;
+	inputBinding.binding = 0;
+	inputBinding.stride = vertexSize;
+	inputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	return inputBinding;
+}
+
+auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout pipelineLayout, VkShaderModule shaderVert, VkShaderModule shaderFrag, const Attributes& attributes, std::size_t vertexSize)
 {
 	VkPipelineShaderStageCreateInfo shaderStageInfoVert;
 	shaderStageInfoVert.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -108,8 +108,8 @@ auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout p
 
 	auto shaderStageInfos = std::vector<VkPipelineShaderStageCreateInfo> {shaderStageInfoVert, shaderStageInfoFrag};
 
-	auto vertexBindingInfo = Vertex::getBindingInfo();
-	auto vertexAttribs = Vertex::getAttribs();
+	auto vertexBindingInfo = getBindingInfo(vertexSize);
+	auto vertexAttribs = getAttributeBindings(attributes);
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo;
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -236,35 +236,138 @@ auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout p
 
 	VkPipeline graphicsPipeline;
 	error << vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &graphicsPipeline);
+	std::cout << "g " << graphicsPipeline << std::endl;
 
 	return graphicsPipeline;
 }
 
-Pipeline::Pipeline(VkPhysicalDevice physicalDevice, VkDevice device, VkRenderPass renderPass, std::size_t imageCount)
+auto createDescriptorPool(VkDevice device, std::size_t size)
 {
-	this->device = device;
-	auto [uniformMemories, uniformBuffers] = createUniformBuffers(physicalDevice, device, imageCount);
-	this->uniformMemories = uniformMemories;
-	this->uniformBuffers = uniformBuffers;
-	auto descriptorLayout = createDescriptorSetLayout(device);
-	descriptorLayouts = std::vector<VkDescriptorSetLayout>(imageCount, descriptorLayout);
+	auto poolSizes = std::vector<VkDescriptorPoolSize> {
+		{.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .descriptorCount = static_cast<uint32_t>(size)},
+		{.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, .descriptorCount = static_cast<uint32_t>(size)},
+		{.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, .descriptorCount = static_cast<uint32_t>(size)},
+	};
+
+	VkDescriptorPoolCreateInfo poolInfo;
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.flags = 0;
+	poolInfo.maxSets = size;
+	poolInfo.pNext = nullptr;
+	poolInfo.poolSizeCount = poolSizes.size();
+	poolInfo.pPoolSizes = poolSizes.data();
+
+	VkDescriptorPool pool;
+	error << vkCreateDescriptorPool(device, &poolInfo, nullptr, &pool);
+
+	return pool;
+}
+
+auto createDescriptorSets(VkDevice device, const std::vector<VkDescriptorSetLayout>& layouts, VkDescriptorPool pool, std::size_t count)
+{
+	VkDescriptorSetAllocateInfo allocInfo;
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.pNext = nullptr;
+	allocInfo.descriptorPool = pool;
+	allocInfo.descriptorSetCount = count;
+	allocInfo.pSetLayouts = layouts.data();
+
+	auto sets = std::vector<VkDescriptorSet>(count);
+	error << vkAllocateDescriptorSets(device, &allocInfo, sets.data());
+
+	return sets;
+}
+
+auto updateDescriptors(
+		VkDevice device,
+		const Uniforms& uniforms,
+		const std::vector<VkDescriptorSet>& descriptorSets,
+		std::size_t count)
+{
+	for (std::size_t i = 0; i < count; ++i) {
+		auto bufferInfos = std::vector<VkDescriptorBufferInfo>(uniforms.size());
+		auto imageInfos = std::vector<VkDescriptorImageInfo>(uniforms.size());
+
+		for (std::size_t j = 0; j < uniforms.size(); ++j) {
+			auto& uniform = uniforms[j];
+
+			std::visit(overloaded{
+				[&] (const UniformBuffer& buffer) {
+					auto& bufferInfo = bufferInfos[j];
+					bufferInfo.buffer = buffer.buffers[i];
+					bufferInfo.offset = 0;
+					bufferInfo.range = buffer.size;
+				},
+				[&] (const Texture& texture) {
+					auto& imageInfo = imageInfos[j];
+					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					imageInfo.imageView = texture.views[i];
+					imageInfo.sampler = texture.sampler;
+				},
+			}, uniform.buffer);
+		}
+
+		auto descriptorWrites = std::vector<VkWriteDescriptorSet>(uniforms.size());
+		for (std::size_t j = 0; j < uniforms.size(); ++j) {
+			auto& uniform = uniforms[j];
+			auto& write = descriptorWrites[j];
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.pNext = nullptr;
+			write.dstSet = descriptorSets[i];
+			write.dstBinding = uniform.binding;
+			write.dstArrayElement = 0;
+			write.descriptorCount = 1;
+			write.descriptorType = uniform.type;
+			write.pBufferInfo = &bufferInfos[j];
+			write.pImageInfo = &imageInfos[j];
+			write.pTexelBufferView = nullptr;
+		}
+
+		vkUpdateDescriptorSets(device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+	}
+}
+
+Uniform createUniform(int binding, VkShaderStageFlagBits stage, UniformBuffer buffer)
+{
+	auto type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	auto info = UniformInfo {binding, type, stage};
+	return Uniform {info, std::move(buffer)};
+}
+
+Uniform createUniform(int binding, VkShaderStageFlagBits stage, Texture texture)
+{
+	auto type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	auto info = UniformInfo {binding, type, stage};
+	return Uniform {info, std::move(texture)};
+}
+
+#include <iostream>
+Pipeline::Pipeline(const Instance& instance, Uniforms&& uniforms, Attributes attributes, std::size_t vertexSize)
+{
+	device = instance.device;
+	this->uniforms = std::move(uniforms);
+	this->attributes = attributes;
 	auto [shaderVert, shaderFrag] = createShaders(device);
 	this->shaderVert = shaderVert;
 	this->shaderFrag = shaderFrag;
+
+	auto descriptorLayout = createDescriptorSetLayout(device, this->uniforms);
+	descriptorLayouts = std::vector<VkDescriptorSetLayout>(instance.imageViews.size(), descriptorLayout);
 	layout = createPipelineLayout(device, descriptorLayouts);
-	pipeline = createPipeline(device, renderPass, layout, shaderVert, shaderFrag);
+	pipeline = createPipeline(device, instance.renderPass, layout, shaderVert, shaderFrag, attributes, vertexSize);
+	descriptorPool = createDescriptorPool(instance.device, instance.imageViews.size());
+	descriptorSets = createDescriptorSets(instance.device, descriptorLayouts, descriptorPool, instance.imageViews.size());
+	updateDescriptors(device, this->uniforms, descriptorSets, instance.imageViews.size());
 }
 
 Pipeline::~Pipeline()
 {
+	std::cout << "PPPPPPP" << std::endl;
+	// vkFreeDescriptorSets(device, descriptorPool, descriptorSets.size(), descriptorSets.data());
+	vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 	vkDestroyPipeline(device, pipeline, nullptr);
 	vkDestroyPipelineLayout(device, layout, nullptr);
 	vkDestroyShaderModule(device, shaderVert, nullptr);
 	vkDestroyShaderModule(device, shaderFrag, nullptr);
-
 	vkDestroyDescriptorSetLayout(device, descriptorLayouts[0], nullptr);
-	for (const auto& buffer : uniformBuffers)
-		vkDestroyBuffer(device, buffer, nullptr);
-	for (const auto& memory : uniformMemories)
-		vkFreeMemory(device, memory, nullptr);
 }

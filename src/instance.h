@@ -5,7 +5,12 @@
 class Instance {
 public:
 	Instance();
+	Instance(const Instance&) = delete;
+	Instance(Instance&&) = default;
 	~Instance();
+
+	Instance& operator= (const Instance&) = delete;
+	Instance& operator= (Instance&&) = default;
 
 	GLFWwindow* window;
 	VkInstance instance;

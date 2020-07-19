@@ -71,7 +71,7 @@ VkInstance createInstance()
   appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);
   appInfo.pEngineName = "Generic Sauce Vulkan Graphics Engine";
   appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 0);
-  appInfo.apiVersion = VK_VERSION_1_0;
+  appInfo.apiVersion = VK_API_VERSION_1_0;
 
 	auto layers = getLayers();
 	auto extensions = getExtensions();

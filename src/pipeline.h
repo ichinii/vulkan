@@ -1,66 +1,76 @@
 #pragma once
 
 #include "graphics.h"
+#include "instance.h"
+#include "uniformbuffer.h"
+#include "texture.h"
+#include "resource.h"
+#include <vector>
+#include <variant>
 
-struct Vertex {
-	glm::vec2 pos;
-	glm::vec3 color;
-	glm::vec2 uv;
+// uniforms
 
-	enum Location {
-		Position,
-		Color,
-		Uv,
-		LocationCount
-	};
-
-	static auto getBindingInfo()
-	{
-		VkVertexInputBindingDescription inputBinding;
-		inputBinding.binding = 0;
-		inputBinding.stride = sizeof(Vertex);
-		inputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-		return inputBinding;
-	}
-
-	static auto getAttribs()
-	{
-		auto attribs = std::vector<VkVertexInputAttributeDescription>(LocationCount);
-
-		attribs[Position].location = 0;
-		attribs[Position].binding = 0;
-		attribs[Position].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attribs[Position].offset = offsetof(Vertex, pos);
-
-		attribs[Color].location = 1;
-		attribs[Color].binding = 0;
-		attribs[Color].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attribs[Color].offset = offsetof(Vertex, color);
-
-		attribs[Uv].location = 2;
-		attribs[Uv].binding = 0;
-		attribs[Uv].format = VK_FORMAT_R32G32_SFLOAT;
-		attribs[Uv].offset = offsetof(Vertex, uv);
-
-		return attribs;
-	}
+struct UniformInfo {
+	int binding;
+	VkDescriptorType type;
+	VkShaderStageFlagBits shaderStage;
 };
 
-struct UBO {
-	glm::mat4 mvp;
+struct Uniform : UniformInfo {
+	// Uniform() = default;
+	// Uniform(const Uniform&) = delete;
+	// Uniform(Uniform&&) = default;
+  //
+	// Uniform& operator= (const Uniform&) = delete;
+	// Uniform& operator= (Uniform&&) = default;
+
+	using Buffer = std::variant<UniformBuffer, Texture>;
+	Buffer buffer;
 };
+using Uniforms = std::vector<Uniform>;
+
+template <typename ...Ts>
+struct overloaded : public Ts... { using Ts::operator()...; };
+template <typename ...Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
+
+extern Uniform createUniform(int binding, VkShaderStageFlagBits stage, UniformBuffer buffer);
+extern Uniform createUniform(int binding, VkShaderStageFlagBits stage, Texture image);
+
+// attributes
+
+struct Attribute {
+	int location;
+	int binding;
+	VkFormat format;
+	std::uint32_t offset;
+};
+
+using Attributes = std::vector<Attribute>;
+
+// pipeline
 
 class Pipeline {
 public:
-	Pipeline(VkPhysicalDevice physicalDevice, VkDevice device, VkRenderPass renderPass, std::size_t imageCount);
+	Pipeline(const Instance& instance, Uniforms&& uniforms, Attributes attributes, std::size_t vertexSize);
+	Pipeline(const Pipeline&) = delete;
+	Pipeline(Pipeline&&) = default;
 	~Pipeline();
 
+	Pipeline& operator= (const Pipeline&) = delete;
+	Pipeline& operator= (Pipeline&&) = default;
+
+	template <typename ...Ts>
+	void updateUniforms(Ts&&... uniforms);
+
 	VkDevice device;
-	std::vector<VkBuffer> uniformBuffers;
-	std::vector<VkDeviceMemory> uniformMemories;
 	std::vector<VkDescriptorSetLayout> descriptorLayouts;
-	VkShaderModule shaderVert;
-	VkShaderModule shaderFrag;
-	VkPipelineLayout layout;
-	VkPipeline pipeline;
+	Uniforms uniforms;
+	Attributes attributes;
+	Resource<VkShaderModule> shaderVert = VK_NULL_HANDLE;
+	Resource<VkShaderModule> shaderFrag = VK_NULL_HANDLE;
+	Resource<VkPipelineLayout> layout = VK_NULL_HANDLE;
+	Resource<VkPipeline> pipeline = VK_NULL_HANDLE;
+	Resource<VkDescriptorPool> descriptorPool = VK_NULL_HANDLE;
+  Resource<std::vector<VkDescriptorSet>> descriptorSets;
 };
