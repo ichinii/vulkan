@@ -236,7 +236,6 @@ auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout p
 
 	VkPipeline graphicsPipeline;
 	error << vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &graphicsPipeline);
-	std::cout << "g " << graphicsPipeline << std::endl;
 
 	return graphicsPipeline;
 }
@@ -362,7 +361,6 @@ Pipeline::Pipeline(const Instance& instance, Uniforms&& uniforms, Attributes att
 
 Pipeline::~Pipeline()
 {
-	std::cout << "PPPPPPP" << std::endl;
 	// vkFreeDescriptorSets(device, descriptorPool, descriptorSets.size(), descriptorSets.data());
 	vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 	vkDestroyPipeline(device, pipeline, nullptr);

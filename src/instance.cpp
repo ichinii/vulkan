@@ -7,7 +7,7 @@ auto getLayerProperties()
 	error << vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 	auto layerProperties = std::vector<VkLayerProperties>(layerCount);
 	error << vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
-	debug::dump("layer", layerProperties);
+	// debug::dump("layer", layerProperties);
 	return layerProperties;
 }
 
@@ -21,7 +21,7 @@ auto getLayers()
 		"VK_LAYER_MESA_overlay",
 	};
 
-	debug::dump_direct("choosing layers", layers);
+	// debug::dump_direct("choosing layers", layers);
 	return layers;
 }
 
@@ -32,7 +32,7 @@ auto getExtensionProperties()
 	auto extensionProperties = std::vector<VkExtensionProperties>(extensionCount);
 	error << vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensionProperties.data());
 
-	debug::dump("extension", extensionProperties);
+	// debug::dump("extension", extensionProperties);
 	return extensionProperties;
 }
 
@@ -48,7 +48,7 @@ auto getExtensions()
 	for (std::size_t i = 0; i < glfwExtensionCount; ++i)
 		extensions.push_back(glfwExtensions[i]);
 
-	debug::dump_direct("choosing extensions", extensions);
+	// debug::dump_direct("choosing extensions", extensions);
 	return extensions;
 }
 
@@ -98,7 +98,7 @@ auto getPhysicalDevices(VkInstance instance)
 	error << vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
 	auto physicalDevices = std::vector<VkPhysicalDevice>(physicalDeviceCount);
 	error << vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, physicalDevices.data());
-	debug::dump("physical devices", physicalDevices);
+	// debug::dump("physical devices", physicalDevices);
 	return physicalDevices;
 }
 
@@ -152,7 +152,7 @@ auto getFormats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 	auto formats = std::vector<VkSurfaceFormatKHR>(formatCount);
 	error << vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, formats.data());
 
-	debug::dump("format", formats);
+	// debug::dump("format", formats);
 	return formats;
 }
 
@@ -163,7 +163,7 @@ auto getPresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 	auto presentModes = std::vector<VkPresentModeKHR>(presentModeCount);
 	error << vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes.data());
 
-	debug::dump("present modes", presentModes);
+	// debug::dump("present modes", presentModes);
 	return presentModes;
 }
 
@@ -171,7 +171,7 @@ auto getSurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surfac
 {
 	VkSurfaceCapabilitiesKHR surfaceCapabilities;
 	error << vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfaceCapabilities);
-	debug::dump(surfaceCapabilities);
+	// debug::dump(surfaceCapabilities);
 	return surfaceCapabilities;
 }
 
