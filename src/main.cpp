@@ -186,7 +186,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	initGlfw();
 
 	auto instance = Instance();
-	auto [pipeline, uboUniform] = PolygonPipeline::createPipeline(instance);
+	auto [pipeline, uniformBuffers, uniformTextures] = PolygonPipeline::createPipeline(instance);
+	auto* uboUniform = uniformBuffers[0];
 
 	// auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(device, physicalDevice, commandPool, queue);
 	auto [semaphoreImageAvailable, semaphoreRenderingDone] = createSemaphores(instance.device);
@@ -200,6 +201,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 		auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(cloc::now() - startTime) - sleepTime;
 
 		auto ubo = PolygonPipeline::Ubo();
+		ubo.mvp = glm::mat4(1.f);
 		ubo.mvp = ubo.mvp * glm::perspective(70.f, static_cast<float>(windowSize.x) / windowSize.y, .1f, 100.f);
 		ubo.mvp = ubo.mvp * glm::lookAt(glm::vec3(0, 0, 2.), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 		ubo.mvp = glm::translate(ubo.mvp, glm::vec3(.2 + .2f * glm::sin(elapsedTime.count() / 2621.87f), 0, 0));
@@ -231,7 +233,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 			std::this_thread::sleep_for(duration);
 			glfwPollEvents();
 		}
-		std::this_thread::sleep_for(100ms);
+		std::this_thread::sleep_for(10ms);
 	}
 
 	// clean up phase

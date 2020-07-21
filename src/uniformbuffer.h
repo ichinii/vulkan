@@ -15,8 +15,8 @@ public:
 
 	// template <typename Type>
 	// static UniformBuffer fromType();
-	template <typename Struct, typename ...Members>
-	static UniformBuffer fromStruct(const Instance& instance, Members Struct::* ... m);
+	template <typename Struct>
+	static UniformBuffer fromStruct(const Instance& instance);
 
 	template <typename T>
 	void update(const T& ubo);
@@ -38,8 +38,8 @@ inline auto createUniformBuffers(const Instance& instance, VkDeviceSize size, st
 {
 	assert(size > 0);
 
-	auto memories = std::vector<VkDeviceMemory>(size);
-	auto buffers = std::vector<VkBuffer>(size);
+	auto memories = std::vector<VkDeviceMemory>(count);
+	auto buffers = std::vector<VkBuffer>(count);
 
 	for (std::size_t i = 0; i < count; ++i) {
 		auto [memory, buffer] = createBuffer(instance.physicalDevice, instance.device, size,
@@ -53,8 +53,8 @@ inline auto createUniformBuffers(const Instance& instance, VkDeviceSize size, st
 	return std::make_tuple(memories, buffers);
 }
 
-template <typename Struct, typename ...Members>
-UniformBuffer UniformBuffer::fromStruct(const Instance& instance, Members Struct::* ... m)
+template <typename Struct>
+UniformBuffer UniformBuffer::fromStruct(const Instance& instance)
 {
 	auto buffer = UniformBuffer();
 	buffer.size = sizeof(Struct);

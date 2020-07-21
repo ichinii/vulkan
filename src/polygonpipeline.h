@@ -39,7 +39,7 @@ inline auto createPipeline(const Instance& instance) {
 	}));
 
 	auto uniformBuffers = UniformBuffers();
-	uniformBuffers.emplace_back(UniformBuffer::fromStruct(instance, &Ubo::mvp));
+	uniformBuffers.emplace_back(UniformBuffer::fromStruct<Ubo>(instance));
 
 	auto uniforms = Uniforms();
 	uniforms.push_back(createUniform(0, VK_SHADER_STAGE_VERTEX_BIT, std::move(uniformBuffers[0])));
@@ -55,7 +55,7 @@ inline auto createPipeline(const Instance& instance) {
 	// auto vertexShader = VertexShader("res/shader.vert.spv", attributes, uniforms);
 
 	auto pipeline = std::make_unique<Pipeline>(instance, std::move(uniforms), attributes, sizeof(PolygonPipeline::Vertex));
-	return std::make_tuple(std::move(pipeline), &uniformBuffers[0]);
+	return std::make_tuple(std::move(pipeline), getUniformBuffers(pipeline->uniforms), getUniformTextures(pipeline->uniforms));
 }
 
 }

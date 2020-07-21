@@ -36,6 +36,8 @@ overloaded(Ts...) -> overloaded<Ts...>;
 
 extern Uniform createUniform(int binding, VkShaderStageFlagBits stage, UniformBuffer buffer);
 extern Uniform createUniform(int binding, VkShaderStageFlagBits stage, Texture image);
+extern std::vector<UniformBuffer*> getUniformBuffers(Uniforms& uniforms);
+extern std::vector<Texture*> getUniformTextures(Uniforms& uniforms);
 
 // attributes
 

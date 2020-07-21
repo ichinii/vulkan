@@ -155,7 +155,7 @@ auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout p
   rasterizationInfo.depthClampEnable = VK_FALSE;
   rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
   rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
-  rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+  rasterizationInfo.cullMode = VK_CULL_MODE_NONE; // TODO: decide cull mode
   rasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
   rasterizationInfo.depthBiasEnable = VK_FALSE;
   rasterizationInfo.depthBiasConstantFactor = 0.f;
@@ -340,7 +340,32 @@ Uniform createUniform(int binding, VkShaderStageFlagBits stage, Texture texture)
 	return Uniform {info, std::move(texture)};
 }
 
-#include <iostream>
+std::vector<UniformBuffer*> getUniformBuffers(Uniforms& uniforms)
+{
+	std::vector<UniformBuffer*> buffers;
+	for (auto& uniform : uniforms) {
+		std::visit(overloaded{
+			[&] (UniformBuffer& buffer) {
+				buffers.push_back(&buffer);
+			}, [] (auto&) {}
+		}, uniform.buffer);
+	}
+	return buffers;
+}
+
+std::vector<Texture*> getUniformTextures(Uniforms& uniforms)
+{
+	std::vector<Texture*> textures;
+	for (auto& uniform : uniforms) {
+		std::visit(overloaded{
+			[&] (Texture& texture) {
+				textures.push_back(&texture);
+			}, [] (auto&) {}
+		}, uniform.buffer);
+	}
+	return textures;
+}
+
 Pipeline::Pipeline(const Instance& instance, Uniforms&& uniforms, Attributes attributes, std::size_t vertexSize)
 {
 	device = instance.device;
