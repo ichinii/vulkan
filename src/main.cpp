@@ -62,7 +62,7 @@ auto createVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkComm
 	return std::make_tuple(memory, buffer, vertices.size());
 }
 
-auto fillCommandBuffers(const std::vector<VkCommandBuffer>& commandBuffers, const std::vector<VkFramebuffer>& framebuffers, VkRenderPass renderPass, VkPipeline pipeline, VkPipelineLayout pipelineLayout,  const std::vector<VkBuffer>& buffers, const std::vector<VkDescriptorSet>& descriptorSets, std::size_t verticesCount)
+auto fillCommandBuffers(const std::vector<VkCommandBuffer>& commandBuffers, const std::vector<VkFramebuffer>& framebuffers, VkRenderPass renderPass, VkPipeline pipeline, VkPipelineLayout pipelineLayout,  const std::vector<VkBuffer>& vertexBuffers, const std::vector<VkDescriptorSet>& descriptorSets, std::size_t verticesCount)
 {
 	VkCommandBufferBeginInfo beginInfo;
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -99,8 +99,8 @@ auto fillCommandBuffers(const std::vector<VkCommandBuffer>& commandBuffers, cons
 
 		vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(commandBuffers[i], 0, buffers.size(), buffers.data(), offsets);
+		auto offsets = std::vector<VkDeviceSize>(vertexBuffers.size(), 0);
+		vkCmdBindVertexBuffers(commandBuffers[i], 0, vertexBuffers.size(), vertexBuffers.data(), offsets.data());
 		vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
 		vkCmdSetViewport(commandBuffers[i], 0, 1, &viewport);
 		vkCmdSetScissor(commandBuffers[i], 0, 1, &scissor);
@@ -193,6 +193,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	auto [semaphoreImageAvailable, semaphoreRenderingDone] = createSemaphores(instance.device);
 
 	auto renderer = PolygonRenderer();
+	renderer.drawCircle(glm::vec2(0), 1.f, glm::vec3(1));
+	renderer.drawTriangle(
+		glm::vec2(-1, -1), glm::vec3(1), glm::vec2(0, 0),
+		glm::vec2(1, -1), glm::vec3(1), glm::vec2(1, 0),
+		glm::vec2(1, 1), glm::vec3(1), glm::vec2(1, 1));
+	auto vertices = renderer.flush();
+	assert(vertices.size() > 0);
+	auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, vertices);
+	fillCommandBuffers(instance.commandBuffers, instance.frameBuffers, instance.renderPass, pipeline->pipeline, pipeline->layout, {vertexBuffer}, pipeline->descriptorSets, verticesCount);
 
 	// we initialzed vulkan (yay)
 	std::cout << "hello vulkan" << std::endl;
@@ -209,20 +218,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 		ubo.mvp = glm::rotate(ubo.mvp, .1f * glm::sin(elapsedTime.count() / 1000.f), glm::vec3(0, 0, 1));
 		uboUniform->update(ubo);
 
-		renderer.drawCircle(glm::vec2(0), 1.f, glm::vec3(1));
-		renderer.drawTriangle(
-			glm::vec2(-1, -1), glm::vec3(1), glm::vec2(0, 0),
-			glm::vec2(1, -1), glm::vec3(1), glm::vec2(1, 0),
-			glm::vec2(1, 1), glm::vec3(1), glm::vec2(1, 1));
-		auto vertices = renderer.flush();
-		assert(vertices.size() > 0);
-		auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, vertices);
-
-		fillCommandBuffers(instance.commandBuffers, instance.frameBuffers, instance.renderPass, pipeline->pipeline, pipeline->layout, {vertexBuffer}, pipeline->descriptorSets, verticesCount);
 		render(instance.device, instance.swapchain, instance.queue, instance.commandBuffers, semaphoreImageAvailable, semaphoreRenderingDone);
 		vkDeviceWaitIdle(instance.device);
-		vkFreeMemory(instance.device, vertexBufferMemory, nullptr);
-		vkDestroyBuffer(instance.device, vertexBuffer, nullptr);
 
 		glfwPollEvents();
 		if (glfwGetKey(instance.window, GLFW_KEY_Q))
@@ -238,6 +235,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
 	// clean up phase
 	vkDeviceWaitIdle(instance.device);
+
+	vkFreeMemory(instance.device, vertexBufferMemory, nullptr);
+	vkDestroyBuffer(instance.device, vertexBuffer, nullptr);
 
 	vkDestroySemaphore(instance.device, semaphoreRenderingDone, nullptr);
 	vkDestroySemaphore(instance.device, semaphoreImageAvailable, nullptr);
