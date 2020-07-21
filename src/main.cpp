@@ -201,7 +201,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	auto vertices = renderer.flush();
 	assert(vertices.size() > 0);
 	auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, vertices);
-	fillCommandBuffers(instance.commandBuffers, instance.frameBuffers, instance.renderPass, pipeline->pipeline, pipeline->layout, {vertexBuffer}, pipeline->descriptorSets, verticesCount);
 
 	// we initialzed vulkan (yay)
 	std::cout << "hello vulkan" << std::endl;
@@ -218,6 +217,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 		ubo.mvp = glm::rotate(ubo.mvp, .1f * glm::sin(elapsedTime.count() / 1000.f), glm::vec3(0, 0, 1));
 		uboUniform->update(ubo);
 
+		fillCommandBuffers(instance.commandBuffers, instance.frameBuffers, instance.renderPass, pipeline->pipeline, pipeline->layout, {vertexBuffer}, pipeline->descriptorSets, verticesCount);
 		render(instance.device, instance.swapchain, instance.queue, instance.commandBuffers, semaphoreImageAvailable, semaphoreRenderingDone);
 		vkDeviceWaitIdle(instance.device);
 

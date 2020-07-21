@@ -240,13 +240,13 @@ auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout p
 	return graphicsPipeline;
 }
 
-auto createDescriptorPool(VkDevice device, std::size_t size)
+auto createDescriptorPool(VkDevice device, const Uniforms& uniforms, std::size_t size)
 {
-	auto poolSizes = std::vector<VkDescriptorPoolSize> {
-		{.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .descriptorCount = static_cast<uint32_t>(size)},
-		{.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, .descriptorCount = static_cast<uint32_t>(size)},
-		{.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, .descriptorCount = static_cast<uint32_t>(size)},
-	};
+	auto poolSizes = std::vector<VkDescriptorPoolSize>(uniforms.size());
+	for (std::size_t i = 0; i < uniforms.size(); ++i) {
+		auto& uniform = uniforms[i];
+		poolSizes[i] = {uniform.type, static_cast<uint32_t>(size)};
+	}
 
 	VkDescriptorPoolCreateInfo poolInfo;
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -368,6 +368,7 @@ std::vector<Texture*> getUniformTextures(Uniforms& uniforms)
 
 Pipeline::Pipeline(const Instance& instance, Uniforms&& uniforms, Attributes attributes, std::size_t vertexSize)
 {
+	count = instance.imageViews.size();
 	device = instance.device;
 	this->uniforms = std::move(uniforms);
 	this->attributes = attributes;
@@ -379,7 +380,7 @@ Pipeline::Pipeline(const Instance& instance, Uniforms&& uniforms, Attributes att
 	descriptorLayouts = std::vector<VkDescriptorSetLayout>(instance.imageViews.size(), descriptorLayout);
 	layout = createPipelineLayout(device, descriptorLayouts);
 	pipeline = createPipeline(device, instance.renderPass, layout, shaderVert, shaderFrag, attributes, vertexSize);
-	descriptorPool = createDescriptorPool(instance.device, instance.imageViews.size());
+	descriptorPool = createDescriptorPool(instance.device, uniforms, instance.imageViews.size());
 	descriptorSets = createDescriptorSets(instance.device, descriptorLayouts, descriptorPool, instance.imageViews.size());
 	updateDescriptors(device, this->uniforms, descriptorSets, instance.imageViews.size());
 }
@@ -393,4 +394,20 @@ Pipeline::~Pipeline()
 	vkDestroyShaderModule(device, shaderVert, nullptr);
 	vkDestroyShaderModule(device, shaderFrag, nullptr);
 	vkDestroyDescriptorSetLayout(device, descriptorLayouts[0], nullptr);
+}
+
+Uniform* Pipeline::setUniform(Uniform newUniform)
+{
+	for (auto& uniform : uniforms) {
+		auto& newInfo = static_cast<UniformInfo&>(newUniform);
+		auto& info = static_cast<UniformInfo&>(uniform);
+		if (newInfo == info) {
+			uniform = std::move(newUniform);
+			updateDescriptors(device, this->uniforms, descriptorSets, count);
+			return &uniform;
+		}
+	}
+
+	assert(false);
+	return nullptr;
 }

@@ -14,6 +14,8 @@ struct UniformInfo {
 	int binding;
 	VkDescriptorType type;
 	VkShaderStageFlagBits shaderStage;
+
+	bool operator== (const UniformInfo& other) { return binding == other.binding && type == other.type && shaderStage == other.shaderStage; }
 };
 
 struct Uniform : UniformInfo {
@@ -62,9 +64,9 @@ public:
 	Pipeline& operator= (const Pipeline&) = delete;
 	Pipeline& operator= (Pipeline&&) = default;
 
-	template <typename ...Ts>
-	void updateUniforms(Ts&&... uniforms);
+	Uniform* setUniform(Uniform uniforms);
 
+	std::size_t count;
 	VkDevice device;
 	std::vector<VkDescriptorSetLayout> descriptorLayouts;
 	Uniforms uniforms;

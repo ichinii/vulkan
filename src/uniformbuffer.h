@@ -11,7 +11,13 @@ public:
 	~UniformBuffer();
 
 	UniformBuffer& operator= (const UniformBuffer&) = delete;
-	UniformBuffer& operator= (UniformBuffer&&) = default;
+	UniformBuffer& operator= (UniformBuffer&& other) {
+		device = other.device;
+		size = other.size;
+		std::swap(buffers, other.buffers);
+		std::swap(memories, other.memories);
+		return *this;
+	}
 
 	// template <typename Type>
 	// static UniformBuffer fromType();
@@ -34,7 +40,7 @@ using UniformBuffers = std::vector<UniformBuffer>;
 // 	
 // }
 
-inline auto createUniformBuffers(const Instance& instance, VkDeviceSize size, std::size_t count)
+inline auto createUniformBuffer(const Instance& instance, VkDeviceSize size, std::size_t count)
 {
 	assert(size > 0);
 
@@ -59,7 +65,7 @@ UniformBuffer UniformBuffer::fromStruct(const Instance& instance)
 	auto buffer = UniformBuffer();
 	buffer.size = sizeof(Struct);
 	buffer.device = instance.device;
-	auto [memories, buffers] = createUniformBuffers(instance, buffer.size, instance.imageViews.size());
+	auto [memories, buffers] = createUniformBuffer(instance, buffer.size, instance.imageViews.size());
 	buffer.memories = memories;
 	buffer.buffers = buffers;
 	return buffer;

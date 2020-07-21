@@ -1,5 +1,6 @@
 #include "uniformbuffer.h"
 
+#include <iostream>
 UniformBuffer::~UniformBuffer()
 {
 	for (const auto& b : buffers)
