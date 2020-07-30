@@ -3,6 +3,7 @@
 #include "graphics.h"
 #include "instance.h"
 #include "uniformbuffer.h"
+#include "attributebuffer.h"
 #include "texture.h"
 #include "resource.h"
 #include <vector>
@@ -40,14 +41,19 @@ extern Uniform createUniform(int binding, VkShaderStageFlagBits stage, UniformBu
 extern Uniform createUniform(int binding, VkShaderStageFlagBits stage, Texture image);
 extern std::vector<UniformBuffer*> getUniformBuffers(Uniforms& uniforms);
 extern std::vector<Texture*> getUniformTextures(Uniforms& uniforms);
+extern Attribute createAttribute(int location, int binding, );
 
 // attributes
 
-struct Attribute {
+struct AttributeInfo {
 	int location;
 	int binding;
 	VkFormat format;
 	std::uint32_t offset;
+};
+
+struct Attribute : AttributeInfo {
+	AttributeBuffer buffer;
 };
 
 using Attributes = std::vector<Attribute>;
