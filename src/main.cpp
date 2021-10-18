@@ -219,6 +219,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
 		fillCommandBuffers(instance.commandBuffers, instance.frameBuffers, instance.renderPass, pipeline->pipeline, pipeline->layout, {vertexBuffer}, pipeline->descriptorSets, verticesCount);
 		render(instance.device, instance.swapchain, instance.queue, instance.commandBuffers, semaphoreImageAvailable, semaphoreRenderingDone);
+
+		// wait because we have no fence
 		vkDeviceWaitIdle(instance.device);
 
 		glfwPollEvents();
@@ -230,7 +232,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 			std::this_thread::sleep_for(duration);
 			glfwPollEvents();
 		}
-		std::this_thread::sleep_for(10ms);
 	}
 
 	// clean up phase

@@ -380,7 +380,7 @@ Pipeline::Pipeline(const Instance& instance, Uniforms&& uniforms, Attributes att
 	descriptorLayouts = std::vector<VkDescriptorSetLayout>(instance.imageViews.size(), descriptorLayout);
 	layout = createPipelineLayout(device, descriptorLayouts);
 	pipeline = createPipeline(device, instance.renderPass, layout, shaderVert, shaderFrag, attributes, vertexSize);
-	descriptorPool = createDescriptorPool(instance.device, uniforms, instance.imageViews.size());
+	descriptorPool = createDescriptorPool(instance.device, this->uniforms, instance.imageViews.size());
 	descriptorSets = createDescriptorSets(instance.device, descriptorLayouts, descriptorPool, instance.imageViews.size());
 	updateDescriptors(device, this->uniforms, descriptorSets, instance.imageViews.size());
 }

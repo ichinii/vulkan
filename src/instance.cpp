@@ -239,7 +239,7 @@ auto createSwapchainImageViews(VkDevice device, VkSwapchainKHR swapchain)
 		imageViewInfo.flags = 0;
 		imageViewInfo.image = images[i];
 		imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		imageViewInfo.format = image_format; 
+		imageViewInfo.format = image_format;
 		imageViewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
 		imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
 		imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_B;

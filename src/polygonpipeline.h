@@ -38,7 +38,6 @@ inline auto createPipeline(const Instance& instance) {
 			return glm::vec4(0, glm::sin(uv.x * 6.f + uv.y * 4.f), 0, 1);
 	}));
 
-
 	auto uniforms = Uniforms();
 	uniforms.push_back(createUniform(0, VK_SHADER_STAGE_VERTEX_BIT, UniformBuffer::fromStruct<Ubo>(instance)));
 	uniforms.push_back(createUniform(1, VK_SHADER_STAGE_FRAGMENT_BIT, std::move(textures[0])));
