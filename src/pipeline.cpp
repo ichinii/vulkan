@@ -60,13 +60,13 @@ auto createPipelineLayout(VkDevice device, const std::vector<VkDescriptorSetLayo
 	return pipelineLayout;
 }
 
-auto getAttributeBindings(const Attributes& attributes)
+auto getAttributeBindings(const AttributeInfos& attributeInfos)
 {
-	auto bindings = std::vector<VkVertexInputAttributeDescription>(attributes.size());
+	auto bindings = std::vector<VkVertexInputAttributeDescription>(attributeInfos.size());
 
-	for (std::size_t i = 0; i < attributes.size(); ++i) {
+	for (std::size_t i = 0; i < attributeInfos.size(); ++i) {
 		auto& binding = bindings[i];
-		auto& attribute = attributes[i];
+		auto& attribute = attributeInfos[i];
 
 		binding.location = attribute.location;
 		binding.binding = attribute.binding;
@@ -86,7 +86,7 @@ auto getBindingInfo(int vertexSize)
 	return inputBinding;
 }
 
-auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout pipelineLayout, VkShaderModule shaderVert, VkShaderModule shaderFrag, const Attributes& attributes, std::size_t vertexSize)
+auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout pipelineLayout, VkShaderModule shaderVert, VkShaderModule shaderFrag, const AttributeInfos& attributeInfos, std::size_t vertexSize)
 {
 	VkPipelineShaderStageCreateInfo shaderStageInfoVert;
 	shaderStageInfoVert.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -109,7 +109,7 @@ auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout p
 	auto shaderStageInfos = std::vector<VkPipelineShaderStageCreateInfo> {shaderStageInfoVert, shaderStageInfoFrag};
 
 	auto vertexBindingInfo = getBindingInfo(vertexSize);
-	auto vertexAttribs = getAttributeBindings(attributes);
+	auto vertexAttribs = getAttributeBindings(attributeInfos);
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo;
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -366,12 +366,12 @@ std::vector<Texture*> getUniformTextures(Uniforms& uniforms)
 	return textures;
 }
 
-Pipeline::Pipeline(const Instance& instance, Uniforms&& uniforms, Attributes attributes, std::size_t vertexSize)
+Pipeline::Pipeline(const Instance& instance, Uniforms&& uniforms, AttributeInfos attributeInfos, std::size_t vertexSize)
 {
 	count = instance.imageViews.size();
 	device = instance.device;
 	this->uniforms = std::move(uniforms);
-	this->attributes = attributes;
+	this->attributeInfos = attributeInfos;
 	auto [shaderVert, shaderFrag] = createShaders(device);
 	this->shaderVert = shaderVert;
 	this->shaderFrag = shaderFrag;
@@ -379,7 +379,7 @@ Pipeline::Pipeline(const Instance& instance, Uniforms&& uniforms, Attributes att
 	auto descriptorLayout = createDescriptorSetLayout(device, this->uniforms);
 	descriptorLayouts = std::vector<VkDescriptorSetLayout>(instance.imageViews.size(), descriptorLayout);
 	layout = createPipelineLayout(device, descriptorLayouts);
-	pipeline = createPipeline(device, instance.renderPass, layout, shaderVert, shaderFrag, attributes, vertexSize);
+	pipeline = createPipeline(device, instance.renderPass, layout, shaderVert, shaderFrag, attributeInfos, vertexSize);
 	descriptorPool = createDescriptorPool(instance.device, this->uniforms, instance.imageViews.size());
 	descriptorSets = createDescriptorSets(instance.device, descriptorLayouts, descriptorPool, instance.imageViews.size());
 	updateDescriptors(device, this->uniforms, descriptorSets, instance.imageViews.size());

@@ -94,7 +94,7 @@ void endSingleTimeCommands(VkDevice device, VkCommandBuffer commandBuffer, VkCom
 	submitInfo.pSignalSemaphores = nullptr;
 
 	error << vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(queue);
+	error << vkQueueWaitIdle(queue);
 
 	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }

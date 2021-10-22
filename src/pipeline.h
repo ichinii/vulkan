@@ -15,7 +15,7 @@ struct UniformInfo {
 	VkDescriptorType type;
 	VkShaderStageFlagBits shaderStage;
 
-	bool operator== (const UniformInfo& other) { return binding == other.binding && type == other.type && shaderStage == other.shaderStage; }
+	bool operator== (const UniformInfo& other) const { return binding == other.binding && type == other.type && shaderStage == other.shaderStage; }
 };
 
 struct Uniform : UniformInfo {
@@ -43,20 +43,20 @@ extern std::vector<Texture*> getUniformTextures(Uniforms& uniforms);
 
 // attributes
 
-struct Attribute {
+struct AttributeInfo {
 	int location;
 	int binding;
 	VkFormat format;
 	std::uint32_t offset;
 };
 
-using Attributes = std::vector<Attribute>;
+using AttributeInfos = std::vector<AttributeInfo>;
 
 // pipeline
 
 class Pipeline {
 public:
-	Pipeline(const Instance& instance, Uniforms&& uniforms, Attributes attributes, std::size_t vertexSize);
+	Pipeline(const Instance& instance, Uniforms&& uniforms, AttributeInfos attributeInfos, std::size_t vertexSize);
 	Pipeline(const Pipeline&) = delete;
 	Pipeline(Pipeline&&) = default;
 	~Pipeline();
@@ -70,7 +70,7 @@ public:
 	VkDevice device;
 	std::vector<VkDescriptorSetLayout> descriptorLayouts;
 	Uniforms uniforms;
-	Attributes attributes;
+	AttributeInfos attributeInfos;
 	Resource<VkShaderModule> shaderVert = VK_NULL_HANDLE;
 	Resource<VkShaderModule> shaderFrag = VK_NULL_HANDLE;
 	Resource<VkPipelineLayout> layout = VK_NULL_HANDLE;

@@ -41,7 +41,7 @@ auto createTextureImage(VkDevice device, VkPhysicalDevice physicalDevice, glm::v
 	return std::make_tuple(textureMemory, textureImage);
 }
 
-auto transitionImageLayout(VkDevice device, VkCommandPool commandPool, VkQueue queue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+auto transitionImageLayout(VkDevice device, VkCommandPool commandPool, VkQueue queue, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
 	auto commandBuffer = beginSingleTimeCommands(device, commandPool);
 
 	VkImageMemoryBarrier barrier{};
@@ -135,13 +135,13 @@ auto createTexture(VkDevice device, VkPhysicalDevice physicalDevice, VkCommandPo
 
 	auto [textureMemory, textureImage] = createTextureImage(device, physicalDevice, image.size);
 
-	transitionImageLayout(device, commandPool, queue, textureImage, texture_format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	transitionImageLayout(device, commandPool, queue, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	copyBufferToImage(device, commandPool, queue, stagingBuffer, textureImage, image.size);
 
 	vkFreeMemory(device, stagingMemory, nullptr);
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-	transitionImageLayout(device, commandPool, queue, textureImage, texture_format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	transitionImageLayout(device, commandPool, queue, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	return std::make_tuple(textureMemory, textureImage);
 }
@@ -211,6 +211,7 @@ Texture Texture::fromGenerator(const Instance& instance, glm::uvec2 size, std::f
 }
 
 Texture Texture::fromFile(const Instance& instance, std::filesystem::path filepath) {
+	assert(false), (void)"unimplemented";
 	return {};
 }
 
@@ -238,7 +239,12 @@ Texture::Texture(Texture&& other)
 
 Texture& Texture::operator= (Texture&& other)
 {
-
+	std::swap(device, other.device);
+	std::swap(memory, other.memory);
+	std::swap(image, other.image);
+	std::swap(sampler, other.sampler);
+	std::swap(views, other.views);
+	return *this;
 }
 
 Texture::~Texture()

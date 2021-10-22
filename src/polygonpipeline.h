@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <cstring>
+#include <ranges>
 
 namespace PolygonPipeline {
 
@@ -28,6 +29,10 @@ struct Vertex {
 
 using Vertices = std::vector<Vertex>;
 
+inline UniformInfo getUniformInfo(Uniform& uniform) {
+	return uniform;
+}
+
 inline auto createPipeline(const Instance& instance) {
 	auto textures = Textures();
 	textures.emplace_back(Texture::fromGenerator(instance, glm::uvec2(8, 8), [] (glm::vec2 uv) {
@@ -42,16 +47,17 @@ inline auto createPipeline(const Instance& instance) {
 	uniforms.push_back(createUniform(0, VK_SHADER_STAGE_VERTEX_BIT, UniformBuffer::fromStruct<Ubo>(instance)));
 	uniforms.push_back(createUniform(1, VK_SHADER_STAGE_FRAGMENT_BIT, std::move(textures[0])));
 	uniforms.push_back(createUniform(2, VK_SHADER_STAGE_FRAGMENT_BIT, std::move(textures[1])));
+	auto uniformInfos = uniforms | std::views::transform(getUniformInfo);
 
-	auto attributes = Attributes {
-		Attribute {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(PolygonPipeline::Vertex, pos)},
-		Attribute {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(PolygonPipeline::Vertex, color)},
-		Attribute {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(PolygonPipeline::Vertex, uv)},
+	auto attributeInfos = AttributeInfos {
+		AttributeInfo {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(PolygonPipeline::Vertex, pos)},
+		AttributeInfo {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(PolygonPipeline::Vertex, color)},
+		AttributeInfo {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(PolygonPipeline::Vertex, uv)},
 	};
 
 	// auto vertexShader = VertexShader("res/shader.vert.spv", attributes, uniforms);
 
-	auto pipeline = std::make_unique<Pipeline>(instance, std::move(uniforms), attributes, sizeof(PolygonPipeline::Vertex));
+	auto pipeline = std::make_unique<Pipeline>(instance, std::move(uniforms), attributeInfos, sizeof(PolygonPipeline::Vertex));
 	return std::make_tuple(std::move(pipeline), getUniformBuffers(pipeline->uniforms), getUniformTextures(pipeline->uniforms));
 }
 

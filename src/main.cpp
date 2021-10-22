@@ -35,9 +35,10 @@ auto copyBuffer(VkDevice device, VkBuffer src, VkBuffer dst, std::size_t size, V
 	endSingleTimeCommands(device, commandBuffer, commandPool, queue);
 }
 
-auto createVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkCommandPool commandPool, VkQueue queue, const PolygonPipeline::Vertices& vertices)
+template <typename T>
+auto createVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkCommandPool commandPool, VkQueue queue, const std::vector<T>& vertices)
 {
-	auto size = sizeof(PolygonPipeline::Vertex) * vertices.size();
+	auto size = sizeof(T) * vertices.size();
 	assert(size > 0);
 
 	auto [stagingMemory, stagingBuffer] = createBuffer(physicalDevice, device, size,
