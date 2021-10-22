@@ -8,10 +8,10 @@
 
 template <typename T>
 struct Resource {
-	Resource() = default;
-	Resource(const Resource&) = delete;
-	Resource(Resource&& other) { std::swap(item, other.item); }
-	Resource(const T& other) : item(other) {}
+	Resource() noexcept = default;
+	Resource(const Resource&) noexcept = delete;
+	Resource(Resource&& other) noexcept { std::swap(item, other.item); }
+	Resource(const T& other) noexcept : item(other) {}
 
 	Resource& operator= (const Resource&) = delete;
 	Resource& operator= (Resource&& other) { std::swap(item, other.item); return *this; }

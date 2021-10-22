@@ -252,7 +252,7 @@ auto createSwapchainImageViews(VkDevice device, VkSwapchainKHR swapchain)
 
 		error << vkCreateImageView(device, &imageViewInfo, nullptr, &imageViews[i]);
 	}
-	std::cout << imageViews.size() << " image viws created" << std::endl;
+	std::cout << imageViews.size() << " swap chain images in use" << std::endl;
 	return imageViews;
 }
 

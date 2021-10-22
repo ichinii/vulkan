@@ -17,12 +17,13 @@ struct UniformInfo {
 
 	bool operator== (const UniformInfo& other) const { return binding == other.binding && type == other.type && shaderStage == other.shaderStage; }
 };
+using UniformInfos = std::vector<UniformInfo>;
 
 struct Uniform : UniformInfo {
 	// Uniform() = default;
 	// Uniform(const Uniform&) = delete;
 	// Uniform(Uniform&&) = default;
-  //
+	//
 	// Uniform& operator= (const Uniform&) = delete;
 	// Uniform& operator= (Uniform&&) = default;
 
@@ -35,11 +36,6 @@ template <typename ...Ts>
 struct overloaded : public Ts... { using Ts::operator()...; };
 template <typename ...Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
-
-extern Uniform createUniform(int binding, VkShaderStageFlagBits stage, UniformBuffer buffer);
-extern Uniform createUniform(int binding, VkShaderStageFlagBits stage, Texture image);
-extern std::vector<UniformBuffer*> getUniformBuffers(Uniforms& uniforms);
-extern std::vector<Texture*> getUniformTextures(Uniforms& uniforms);
 
 // attributes
 
@@ -56,7 +52,7 @@ using AttributeInfos = std::vector<AttributeInfo>;
 
 class Pipeline {
 public:
-	Pipeline(const Instance& instance, Uniforms&& uniforms, AttributeInfos attributeInfos, std::size_t vertexSize);
+	Pipeline(const Instance& instance, UniformInfos uniformInfos, AttributeInfos attributeInfos, std::size_t vertexSize);
 	Pipeline(const Pipeline&) = delete;
 	Pipeline(Pipeline&&) = default;
 	~Pipeline();
@@ -64,17 +60,17 @@ public:
 	Pipeline& operator= (const Pipeline&) = delete;
 	Pipeline& operator= (Pipeline&&) = default;
 
-	Uniform* setUniform(Uniform uniforms);
+	void updateUniforms(const Uniforms& uniforms);
 
 	std::size_t count;
 	VkDevice device;
-	std::vector<VkDescriptorSetLayout> descriptorLayouts;
-	Uniforms uniforms;
+	UniformInfos uniformInfos;
 	AttributeInfos attributeInfos;
 	Resource<VkShaderModule> shaderVert = VK_NULL_HANDLE;
 	Resource<VkShaderModule> shaderFrag = VK_NULL_HANDLE;
 	Resource<VkPipelineLayout> layout = VK_NULL_HANDLE;
 	Resource<VkPipeline> pipeline = VK_NULL_HANDLE;
 	Resource<VkDescriptorPool> descriptorPool = VK_NULL_HANDLE;
-  Resource<std::vector<VkDescriptorSet>> descriptorSets;
+	std::vector<VkDescriptorSetLayout> descriptorLayouts;
+	std::vector<VkDescriptorSet> descriptorSets;
 };

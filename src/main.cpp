@@ -63,36 +63,36 @@ auto createVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkComm
 	return std::make_tuple(memory, buffer, vertices.size());
 }
 
-auto fillCommandBuffers(const std::vector<VkCommandBuffer>& commandBuffers, const std::vector<VkFramebuffer>& framebuffers, VkRenderPass renderPass, VkPipeline pipeline, VkPipelineLayout pipelineLayout,  const std::vector<VkBuffer>& vertexBuffers, const std::vector<VkDescriptorSet>& descriptorSets, std::size_t verticesCount)
+auto fillCommandBuffers(const std::vector<VkCommandBuffer>& commandBuffers, const std::vector<VkFramebuffer>& framebuffers, VkRenderPass renderPass, VkPipeline pipeline, VkPipelineLayout pipelineLayout,	const std::vector<VkBuffer>& vertexBuffers, const std::vector<VkDescriptorSet>& descriptorSets, std::size_t verticesCount)
 {
 	VkCommandBufferBeginInfo beginInfo;
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  beginInfo.pNext = nullptr;
-  beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-  beginInfo.pInheritanceInfo = nullptr;
+	beginInfo.pNext = nullptr;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+	beginInfo.pInheritanceInfo = nullptr;
 
 	for (std::size_t i = 0; i < commandBuffers.size(); ++i) {
 		error << vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
 
 		VkRenderPassBeginInfo renderPassBeginInfo;
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassBeginInfo.pNext = nullptr;
-    renderPassBeginInfo.renderPass = renderPass;
-    renderPassBeginInfo.framebuffer = framebuffers[i];
-    renderPassBeginInfo.renderArea.offset = {0, 0};
-    renderPassBeginInfo.renderArea.extent = {windowSize.x, windowSize.y};
+		renderPassBeginInfo.pNext = nullptr;
+		renderPassBeginInfo.renderPass = renderPass;
+		renderPassBeginInfo.framebuffer = framebuffers[i];
+		renderPassBeginInfo.renderArea.offset = {0, 0};
+		renderPassBeginInfo.renderArea.extent = {windowSize.x, windowSize.y};
 
 		VkClearValue clearValue = {{{.01f, .06f, .1f, 1.f}}};
-    renderPassBeginInfo.clearValueCount = 1;
-    renderPassBeginInfo.pClearValues = &clearValue;
+		renderPassBeginInfo.clearValueCount = 1;
+		renderPassBeginInfo.pClearValues = &clearValue;
 
 		VkViewport viewport;
 		viewport.x = 0;
-    viewport.y = 0;
-    viewport.width = windowSize.x;
-    viewport.height = windowSize.y;
-    viewport.minDepth = 0.f;
-    viewport.maxDepth = 1.f;
+		viewport.y = 0;
+		viewport.width = windowSize.x;
+		viewport.height = windowSize.y;
+		viewport.minDepth = 0.f;
+		viewport.maxDepth = 1.f;
 
 		VkRect2D scissor;
 		scissor.offset = {0, 0};
@@ -116,8 +116,8 @@ auto createSemaphores(VkDevice device)
 {
 	VkSemaphoreCreateInfo semaphoreInfo;
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-  semaphoreInfo.pNext = nullptr;
-  semaphoreInfo.flags = 0;
+	semaphoreInfo.pNext = nullptr;
+	semaphoreInfo.flags = 0;
 
 	VkSemaphore semaphoreImageAvailable;
 	error << vkCreateSemaphore(device, &semaphoreInfo, nullptr, &semaphoreImageAvailable);
@@ -187,8 +187,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	initGlfw();
 
 	auto instance = Instance();
-	auto [pipeline, uniformBuffers, uniformTextures] = PolygonPipeline::createPipeline(instance);
-	auto* uboUniform = uniformBuffers[0];
+	auto pipeline = PolygonPipeline::createPipeline(instance);
+	auto uniformInfos = pipeline->uniformInfos;
+	auto uniforms = PolygonPipeline::createUniforms(instance);
+	auto& uboUniform = std::get<UniformBuffer>(uniforms[0].buffer);
+
+	pipeline->updateUniforms(uniforms);
 
 	// auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(device, physicalDevice, commandPool, queue);
 	auto [semaphoreImageAvailable, semaphoreRenderingDone] = createSemaphores(instance.device);
@@ -216,7 +220,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 		ubo.mvp = glm::translate(ubo.mvp, glm::vec3(.2 + .2f * glm::sin(elapsedTime.count() / 2621.87f), 0, 0));
 		ubo.mvp = glm::scale(ubo.mvp, glm::vec3(.8, .8, 1));
 		ubo.mvp = glm::rotate(ubo.mvp, .1f * glm::sin(elapsedTime.count() / 1000.f), glm::vec3(0, 0, 1));
-		uboUniform->update(ubo);
+		uboUniform.update(ubo);
 
 		fillCommandBuffers(instance.commandBuffers, instance.frameBuffers, instance.renderPass, pipeline->pipeline, pipeline->layout, {vertexBuffer}, pipeline->descriptorSets, verticesCount);
 		render(instance.device, instance.swapchain, instance.queue, instance.commandBuffers, semaphoreImageAvailable, semaphoreRenderingDone);
