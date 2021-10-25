@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics.h"
+#include "resource.h"
 
 class Instance {
 public:
@@ -20,10 +21,10 @@ public:
 
 	VkSwapchainKHR swapchain;
 	std::vector<VkImageView> imageViews;
-	VkRenderPass renderPass;
 	std::vector<VkFramebuffer> frameBuffers;
-	VkCommandPool commandPool;
-	std::vector<VkCommandBuffer> commandBuffers;
+	Resource<VkRenderPass> renderPass;
+	Resource<VkCommandPool> commandPool;
+	Resource<VkCommandBuffer> commandBuffer;
 
 	VkQueue queue;
 };

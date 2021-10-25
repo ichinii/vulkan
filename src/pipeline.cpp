@@ -46,14 +46,14 @@ auto createShaders(VkDevice device)
 	return std::make_tuple(shaderVert, shaderFrag);
 }
 
-auto createPipelineLayout(VkDevice device, const std::vector<VkDescriptorSetLayout>& descriptorLayouts)
+auto createPipelineLayout(VkDevice device, VkDescriptorSetLayout& descriptorLayout)
 {
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo;
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutInfo.pNext = nullptr;
 	pipelineLayoutInfo.flags = 0;
-	pipelineLayoutInfo.setLayoutCount = descriptorLayouts.size();
-	pipelineLayoutInfo.pSetLayouts = descriptorLayouts.data();
+	pipelineLayoutInfo.setLayoutCount = 1;
+	pipelineLayoutInfo.pSetLayouts = &descriptorLayout;
 	pipelineLayoutInfo.pushConstantRangeCount = 0;
 	pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
@@ -110,68 +110,65 @@ auto createDescriptorPool(VkDevice device, const UniformInfos& uniformInfos, std
 	return pool;
 }
 
-auto createDescriptorSets(VkDevice device, const std::vector<VkDescriptorSetLayout>& layouts, VkDescriptorPool pool, std::size_t count)
+auto createDescriptorSets(VkDevice device, VkDescriptorSetLayout layout, VkDescriptorPool pool)
 {
 	VkDescriptorSetAllocateInfo allocInfo;
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.pNext = nullptr;
 	allocInfo.descriptorPool = pool;
-	allocInfo.descriptorSetCount = count;
-	allocInfo.pSetLayouts = layouts.data();
+	allocInfo.descriptorSetCount = 1;
+	allocInfo.pSetLayouts = &layout;
 
-	auto sets = std::vector<VkDescriptorSet>(count);
-	error << vkAllocateDescriptorSets(device, &allocInfo, sets.data());
+	auto set = VkDescriptorSet();
+	error << vkAllocateDescriptorSets(device, &allocInfo, &set);
 
-	return sets;
+	return set;
 }
 
-auto updateDescriptors(
+auto updateDescriptor(
 		VkDevice device,
 		const Uniforms& uniforms,
-		const std::vector<VkDescriptorSet>& descriptorSets,
-		std::size_t count)
+		VkDescriptorSet& descriptorSet)
 {
-	for (std::size_t i = 0; i < count; ++i) {
-		auto bufferInfos = std::vector<VkDescriptorBufferInfo>(uniforms.size());
-		auto imageInfos = std::vector<VkDescriptorImageInfo>(uniforms.size());
+	auto bufferInfos = std::vector<VkDescriptorBufferInfo>(uniforms.size());
+	auto imageInfos = std::vector<VkDescriptorImageInfo>(uniforms.size());
 
-		for (std::size_t j = 0; j < uniforms.size(); ++j) {
-			auto& uniform = uniforms[j];
+	for (std::size_t j = 0; j < uniforms.size(); ++j) {
+		auto& uniform = uniforms[j];
 
-			std::visit(overloaded{
-				[&] (const UniformBuffer& buffer) {
-					auto& bufferInfo = bufferInfos[j];
-					bufferInfo.buffer = buffer.buffers[i];
-					bufferInfo.offset = 0;
-					bufferInfo.range = buffer.size;
-				},
-				[&] (const Texture& texture) {
-					auto& imageInfo = imageInfos[j];
-					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-					imageInfo.imageView = texture.views[i];
-					imageInfo.sampler = texture.sampler;
-				},
-			}, uniform.buffer);
-		}
-
-		auto descriptorWrites = std::vector<VkWriteDescriptorSet>(uniforms.size());
-		for (std::size_t j = 0; j < uniforms.size(); ++j) {
-			auto& uniform = uniforms[j];
-			auto& write = descriptorWrites[j];
-			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			write.pNext = nullptr;
-			write.dstSet = descriptorSets[i];
-			write.dstBinding = uniform.binding;
-			write.dstArrayElement = 0;
-			write.descriptorCount = 1;
-			write.descriptorType = uniform.type;
-			write.pBufferInfo = &bufferInfos[j];
-			write.pImageInfo = &imageInfos[j];
-			write.pTexelBufferView = nullptr;
-		}
-
-		vkUpdateDescriptorSets(device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+		std::visit(overloaded{
+			[&] (const UniformBuffer& buffer) {
+				auto& bufferInfo = bufferInfos[j];
+				bufferInfo.buffer = buffer.buffer;
+				bufferInfo.offset = 0;
+				bufferInfo.range = buffer.size;
+			},
+			[&] (const Texture& texture) {
+				auto& imageInfo = imageInfos[j];
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo.imageView = texture.view;
+				imageInfo.sampler = texture.sampler;
+			},
+		}, uniform.buffer);
 	}
+
+	auto descriptorWrites = std::vector<VkWriteDescriptorSet>(uniforms.size());
+	for (std::size_t j = 0; j < uniforms.size(); ++j) {
+		auto& uniform = uniforms[j];
+		auto& write = descriptorWrites[j];
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.pNext = nullptr;
+		write.dstSet = descriptorSet;
+		write.dstBinding = uniform.binding;
+		write.dstArrayElement = 0;
+		write.descriptorCount = 1;
+		write.descriptorType = uniform.type;
+		write.pBufferInfo = &bufferInfos[j];
+		write.pImageInfo = &imageInfos[j];
+		write.pTexelBufferView = nullptr;
+	}
+
+	vkUpdateDescriptorSets(device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
 }
 
 auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout pipelineLayout, VkShaderModule shaderVert, VkShaderModule shaderFrag, const AttributeInfos& attributeInfos, std::size_t vertexSize)
@@ -330,7 +327,6 @@ auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout p
 
 Pipeline::Pipeline(const Instance& instance, UniformInfos uniformInfos_, AttributeInfos attributeInfos_, std::size_t vertexSize)
 {
-	count = instance.imageViews.size();
 	device = instance.device;
 	uniformInfos = std::move(uniformInfos_);
 	attributeInfos = std::move(attributeInfos_);
@@ -338,12 +334,11 @@ Pipeline::Pipeline(const Instance& instance, UniformInfos uniformInfos_, Attribu
 	shaderVert = shaderVert_;
 	shaderFrag = shaderFrag_;
 
-	auto descriptorLayout = createDescriptorSetLayout(device, uniformInfos);
-	descriptorLayouts = std::vector<VkDescriptorSetLayout>(instance.imageViews.size(), descriptorLayout);
-	layout = createPipelineLayout(device, descriptorLayouts);
+	descriptorLayout = createDescriptorSetLayout(device, uniformInfos);
+	layout = createPipelineLayout(device, descriptorLayout);
 	pipeline = createPipeline(device, instance.renderPass, layout, shaderVert, shaderFrag, attributeInfos, vertexSize);
 	descriptorPool = createDescriptorPool(instance.device, uniformInfos, instance.imageViews.size());
-	descriptorSets = createDescriptorSets(instance.device, descriptorLayouts, descriptorPool, instance.imageViews.size());
+	descriptorSet = createDescriptorSets(instance.device, descriptorLayout, descriptorPool);
 }
 
 Pipeline::~Pipeline()
@@ -354,10 +349,10 @@ Pipeline::~Pipeline()
 	vkDestroyPipelineLayout(device, layout, nullptr);
 	vkDestroyShaderModule(device, shaderVert, nullptr);
 	vkDestroyShaderModule(device, shaderFrag, nullptr);
-	vkDestroyDescriptorSetLayout(device, descriptorLayouts[0], nullptr);
+	vkDestroyDescriptorSetLayout(device, descriptorLayout, nullptr);
 }
 
 void Pipeline::updateUniforms(const Uniforms& uniforms)
 {
-	updateDescriptors(device, uniforms, descriptorSets, count);
+	updateDescriptor(device, uniforms, descriptorSet);
 }

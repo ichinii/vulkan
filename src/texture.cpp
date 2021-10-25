@@ -164,14 +164,6 @@ auto createImageView(VkDevice device, VkImage image) {
 	return textureView;
 }
 
-auto createImageViews(VkDevice device, VkImage image, std::size_t size) {
-	auto swapchainImageViews = std::vector<VkImageView>();
-	std::generate_n(std::back_inserter(swapchainImageViews), size, [=] {
-		return createImageView(device, image);
-	});
-	return swapchainImageViews;
-}
-
 auto createImageSampler(VkDevice device) {
 	VkSamplerCreateInfo samplerInfo{};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -218,40 +210,20 @@ Texture Texture::fromFile(const Instance& instance, std::filesystem::path filepa
 Texture Texture::fromImage(const Instance& instance, Image image) {
 	Texture texture;
 	auto [memory, textureImage] = createTexture(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, image);
-	auto views = createImageViews(instance.device, textureImage, instance.imageViews.size());
+	auto view = createImageView(instance.device, textureImage);
 	auto sampler = createImageSampler(instance.device);
 	texture.device = instance.device;
 	texture.memory = memory;
 	texture.image = textureImage;
-	texture.views = views;
+	texture.view = view;
 	texture.sampler = sampler;
 	return texture;
-}
-
-Texture::Texture(Texture&& other)
-	: device(other.device)
-	, views(std::move(other.views))
-{
-	std::swap(memory, other.memory);
-	std::swap(image, other.image);
-	std::swap(sampler, other.sampler);
-}
-
-Texture& Texture::operator= (Texture&& other)
-{
-	std::swap(device, other.device);
-	std::swap(memory, other.memory);
-	std::swap(image, other.image);
-	std::swap(sampler, other.sampler);
-	std::swap(views, other.views);
-	return *this;
 }
 
 Texture::~Texture()
 {
 	vkDestroySampler(device, sampler, nullptr);
-	for (auto view : views)
-		vkDestroyImageView(device, view, nullptr);
+	vkDestroyImageView(device, view, nullptr);
 	vkDestroyImage(device, image, nullptr);
 	vkFreeMemory(device, memory, nullptr);
 }

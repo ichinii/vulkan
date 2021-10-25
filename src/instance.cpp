@@ -65,13 +65,13 @@ GLFWwindow* createWindow()
 VkInstance createInstance()
 {
 	VkApplicationInfo appInfo;
-  appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  appInfo.pNext = nullptr;
-  appInfo.pApplicationName = "Generic Sauce Vulkan Application";
-  appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);
-  appInfo.pEngineName = "Generic Sauce Vulkan Graphics Engine";
-  appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 0);
-  appInfo.apiVersion = VK_API_VERSION_1_0;
+	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+	appInfo.pNext = nullptr;
+	appInfo.pApplicationName = "Generic Sauce Vulkan Application";
+	appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);
+	appInfo.pEngineName = "Generic Sauce Vulkan Graphics Engine";
+	appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 0);
+	appInfo.apiVersion = VK_API_VERSION_1_0;
 
 	auto layers = getLayers();
 	auto extensions = getExtensions();
@@ -115,11 +115,11 @@ auto createDevice(VkPhysicalDevice physicalDevice)
 	VkDeviceQueueCreateInfo queueInfo;
 	queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	queueInfo.pNext = nullptr;
-  queueInfo.flags = 0;
-  queueInfo.queueFamilyIndex = 0; // TODO: choose best family
-  queueInfo.queueCount = 1; // TODO: check if amount is available
+	queueInfo.flags = 0;
+	queueInfo.queueFamilyIndex = 0; // TODO: choose best family
+	queueInfo.queueCount = 1; // TODO: check if amount is available
 	auto queuePriorities = std::vector<float> {1.f};
-  queueInfo.pQueuePriorities = queuePriorities.data();
+	queueInfo.pQueuePriorities = queuePriorities.data();
 
 	VkPhysicalDeviceFeatures features = {};
 
@@ -129,15 +129,15 @@ auto createDevice(VkPhysicalDevice physicalDevice)
 
 	VkDeviceCreateInfo deviceInfo;
 	deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  deviceInfo.pNext = nullptr;
-  deviceInfo.flags = 0;
-  deviceInfo.queueCreateInfoCount = 1;
-  deviceInfo.pQueueCreateInfos = &queueInfo;
-  deviceInfo.enabledLayerCount = 0;
-  deviceInfo.ppEnabledLayerNames = nullptr;
-  deviceInfo.enabledExtensionCount = deviceExtensions.size();
-  deviceInfo.ppEnabledExtensionNames = deviceExtensions.data();
-  deviceInfo.pEnabledFeatures = &features;
+	deviceInfo.pNext = nullptr;
+	deviceInfo.flags = 0;
+	deviceInfo.queueCreateInfoCount = 1;
+	deviceInfo.pQueueCreateInfos = &queueInfo;
+	deviceInfo.enabledLayerCount = 0;
+	deviceInfo.ppEnabledLayerNames = nullptr;
+	deviceInfo.enabledExtensionCount = deviceExtensions.size();
+	deviceInfo.ppEnabledExtensionNames = deviceExtensions.data();
+	deviceInfo.pEnabledFeatures = &features;
 
 	VkDevice device;
 	error << vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &device);
@@ -195,23 +195,23 @@ auto createSwapchain(VkDevice device, VkSurfaceKHR surface)
 {
 	VkSwapchainCreateInfoKHR swapchainInfo;
 	swapchainInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-  swapchainInfo.pNext = nullptr;
-  swapchainInfo.flags = 0;
-  swapchainInfo.surface = surface;
-  swapchainInfo.minImageCount = 2; // TODO: dependent
-  swapchainInfo.imageFormat = image_format; // TODO: dependent
-  swapchainInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; // TODO: dependent
-  swapchainInfo.imageExtent = VkExtent2D{windowSize.x, windowSize.y}; // TODO: dependent
-  swapchainInfo.imageArrayLayers = 1;
-  swapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-  swapchainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  swapchainInfo.queueFamilyIndexCount = 0;
-  swapchainInfo.pQueueFamilyIndices = nullptr;
-  swapchainInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-  swapchainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-  swapchainInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR; // TODO: dependent
-  swapchainInfo.clipped = VK_TRUE;
-  swapchainInfo.oldSwapchain = VK_NULL_HANDLE;
+	swapchainInfo.pNext = nullptr;
+	swapchainInfo.flags = 0;
+	swapchainInfo.surface = surface;
+	swapchainInfo.minImageCount = 2; // TODO: dependent
+	swapchainInfo.imageFormat = image_format; // TODO: dependent
+	swapchainInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; // TODO: dependent
+	swapchainInfo.imageExtent = VkExtent2D{windowSize.x, windowSize.y}; // TODO: dependent
+	swapchainInfo.imageArrayLayers = 1;
+	swapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	swapchainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	swapchainInfo.queueFamilyIndexCount = 0;
+	swapchainInfo.pQueueFamilyIndices = nullptr;
+	swapchainInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+	swapchainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	swapchainInfo.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR; // TODO: dependent
+	swapchainInfo.clipped = VK_TRUE;
+	swapchainInfo.oldSwapchain = VK_NULL_HANDLE;
 
 	VkSwapchainKHR swapchain;
 	error << vkCreateSwapchainKHR(device, &swapchainInfo, nullptr, &swapchain);
@@ -287,23 +287,23 @@ auto createRenderPass(VkDevice device)
 
 	VkSubpassDependency subpassDependency;
 	subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-  subpassDependency.dstSubpass = 0;
-  subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  subpassDependency.srcAccessMask = 0;
-  subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-  subpassDependency.dependencyFlags = 0;
+	subpassDependency.dstSubpass = 0;
+	subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependency.srcAccessMask = 0;
+	subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	subpassDependency.dependencyFlags = 0;
 
 	VkRenderPassCreateInfo renderPassInfo;
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-  renderPassInfo.pNext = nullptr;
-  renderPassInfo.flags = 0;
-  renderPassInfo.attachmentCount = 1;
-  renderPassInfo.pAttachments = &attachmentDescription;
-  renderPassInfo.subpassCount = 1;
-  renderPassInfo.pSubpasses = &subpassDescription;
-  renderPassInfo.dependencyCount = 1;
-  renderPassInfo.pDependencies = &subpassDependency;
+	renderPassInfo.pNext = nullptr;
+	renderPassInfo.flags = 0;
+	renderPassInfo.attachmentCount = 1;
+	renderPassInfo.pAttachments = &attachmentDescription;
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpassDescription;
+	renderPassInfo.dependencyCount = 1;
+	renderPassInfo.pDependencies = &subpassDependency;
 
 	VkRenderPass renderPass;
 	error << vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass);
@@ -316,14 +316,14 @@ auto createFrameBuffers(VkDevice device, const std::vector<VkImageView>& images,
 	for (std::size_t i = 0; i < images.size(); ++i) {
 		VkFramebufferCreateInfo framebufferInfo;
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferInfo.pNext = nullptr;
-    framebufferInfo.flags = 0;
-    framebufferInfo.renderPass = renderPass;
-    framebufferInfo.attachmentCount = 1;
-    framebufferInfo.pAttachments = &images[i];
-    framebufferInfo.width = windowSize.x;
-    framebufferInfo.height = windowSize.y;
-    framebufferInfo.layers = 1;
+		framebufferInfo.pNext = nullptr;
+		framebufferInfo.flags = 0;
+		framebufferInfo.renderPass = renderPass;
+		framebufferInfo.attachmentCount = 1;
+		framebufferInfo.pAttachments = &images[i];
+		framebufferInfo.width = windowSize.x;
+		framebufferInfo.height = windowSize.y;
+		framebufferInfo.layers = 1;
 
 		error << vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]);
 	}
@@ -334,28 +334,28 @@ auto createCommandPool(VkDevice device)
 {
 	VkCommandPoolCreateInfo commandPoolInfo;
 	commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-  commandPoolInfo.pNext = nullptr;
-  // commandPoolInfo.flags = 0;
-  commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-  commandPoolInfo.queueFamilyIndex = 0; // TODO: dependent
+	commandPoolInfo.pNext = nullptr;
+	// commandPoolInfo.flags = 0;
+	commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	commandPoolInfo.queueFamilyIndex = 0; // TODO: dependent
 
 	VkCommandPool commandPool;
 	error << vkCreateCommandPool(device, &commandPoolInfo, nullptr, &commandPool);
 	return commandPool;
 }
 
-auto createCommandBuffers(VkDevice device, VkCommandPool commandPool, std::size_t count)
+auto createCommandBuffer(VkDevice device, VkCommandPool commandPool)
 {
 	VkCommandBufferAllocateInfo commandBufferInfo;
 	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-  commandBufferInfo.pNext = nullptr;
-  commandBufferInfo.commandPool = commandPool;
-  commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-  commandBufferInfo.commandBufferCount = count;
+	commandBufferInfo.pNext = nullptr;
+	commandBufferInfo.commandPool = commandPool;
+	commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	commandBufferInfo.commandBufferCount = 1;
 
-	auto commandBuffers = std::vector<VkCommandBuffer>(count);
-	error << vkAllocateCommandBuffers(device, &commandBufferInfo, commandBuffers.data());
-	return commandBuffers;
+	auto commandBuffer = VkCommandBuffer();
+	error << vkAllocateCommandBuffers(device, &commandBufferInfo, &commandBuffer);
+	return commandBuffer;
 }
 
 auto getQueue(VkDevice device)
@@ -378,14 +378,14 @@ Instance::Instance()
 	renderPass = createRenderPass(device);
 	frameBuffers = createFrameBuffers(device, imageViews, renderPass);
 	commandPool = createCommandPool(device);
-	commandBuffers = createCommandBuffers(device, commandPool, imageViews.size());
+	commandBuffer = createCommandBuffer(device, commandPool);
 
 	queue = getQueue(device);
 }
 
 Instance::~Instance()
 {
-	vkFreeCommandBuffers(device, commandPool, imageViews.size(), commandBuffers.data()); // implicit when pool gets destroyed
+	vkFreeCommandBuffers(device, commandPool, 1, &*commandBuffer); // implicit when pool gets destroyed
 	vkDestroyCommandPool(device, commandPool, nullptr);
 	for (const auto& framebuffer : frameBuffers)
 		vkDestroyFramebuffer(device, framebuffer, nullptr);

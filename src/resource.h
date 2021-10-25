@@ -16,7 +16,11 @@ struct Resource {
 	Resource& operator= (const Resource&) = delete;
 	Resource& operator= (Resource&& other) { std::swap(item, other.item); return *this; }
 
-	operator T&() { return item; }
+	operator const T& () const { return item; }
+	operator T& () { return item; }
+
+	const T& operator* () const { return item; }
+	T& operator * () { return item; }
 
 	T item = {};
 };

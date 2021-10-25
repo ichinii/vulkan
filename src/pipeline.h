@@ -62,7 +62,6 @@ public:
 
 	void updateUniforms(const Uniforms& uniforms);
 
-	std::size_t count;
 	VkDevice device;
 	UniformInfos uniformInfos;
 	AttributeInfos attributeInfos;
@@ -71,6 +70,6 @@ public:
 	Resource<VkPipelineLayout> layout = VK_NULL_HANDLE;
 	Resource<VkPipeline> pipeline = VK_NULL_HANDLE;
 	Resource<VkDescriptorPool> descriptorPool = VK_NULL_HANDLE;
-	std::vector<VkDescriptorSetLayout> descriptorLayouts;
-	std::vector<VkDescriptorSet> descriptorSets;
+	Resource<VkDescriptorSetLayout> descriptorLayout;
+	Resource<VkDescriptorSet> descriptorSet;
 };

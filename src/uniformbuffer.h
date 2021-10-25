@@ -1,6 +1,7 @@
 #pragma once
 
 #include "instance.h"
+#include "resource.h"
 #include <cstring>
 
 class UniformBuffer {
@@ -14,8 +15,8 @@ public:
 	UniformBuffer& operator= (UniformBuffer&& other) {
 		device = other.device;
 		size = other.size;
-		std::swap(buffers, other.buffers);
-		std::swap(memories, other.memories);
+		std::swap(buffer, other.buffer);
+		std::swap(memory, other.memory);
 		return *this;
 	}
 
@@ -27,10 +28,10 @@ public:
 	template <typename T>
 	void update(const T& ubo);
 
-	VkDevice device;
-	std::vector<VkBuffer> buffers;
-	std::vector<VkDeviceMemory> memories;
-	VkDeviceSize size;
+	VkDevice device = VK_NULL_HANDLE;
+	Resource<VkBuffer> buffer = VK_NULL_HANDLE;
+	Resource<VkDeviceMemory> memory = VK_NULL_HANDLE;
+	VkDeviceSize size = 0;
 };
 
 using UniformBuffers = std::vector<UniformBuffer>;
@@ -40,23 +41,15 @@ using UniformBuffers = std::vector<UniformBuffer>;
 // 	
 // }
 
-inline auto createUniformBuffer(const Instance& instance, VkDeviceSize size, std::size_t count)
+inline auto createUniformBuffer(const Instance& instance, VkDeviceSize size)
 {
 	assert(size > 0);
 
-	auto memories = std::vector<VkDeviceMemory>(count);
-	auto buffers = std::vector<VkBuffer>(count);
+	auto [memory, buffer] = createBuffer(instance.physicalDevice, instance.device, size,
+		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-	for (std::size_t i = 0; i < count; ++i) {
-		auto [memory, buffer] = createBuffer(instance.physicalDevice, instance.device, size,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-		memories[i] = memory;
-		buffers[i] = buffer;
-	}
-
-	return std::make_tuple(memories, buffers);
+	return std::make_tuple(memory, buffer);
 }
 
 template <typename Struct>
@@ -65,19 +58,17 @@ UniformBuffer UniformBuffer::fromStruct(const Instance& instance)
 	auto buffer = UniformBuffer();
 	buffer.size = sizeof(Struct);
 	buffer.device = instance.device;
-	auto [memories, buffers] = createUniformBuffer(instance, buffer.size, instance.imageViews.size());
-	buffer.memories = memories;
-	buffer.buffers = buffers;
+	auto [memory, bbuffer] = createUniformBuffer(instance, buffer.size);
+	buffer.memory = memory;
+	buffer.buffer = bbuffer;
 	return buffer;
 }
 
 template <typename T>
 void UniformBuffer::update(const T& ubo)
 {
-	for (auto memory : memories) {
-		void* data;
-		vkMapMemory(device, memory, 0, sizeof(T), 0, &data);
-		std::memcpy(data, &ubo, sizeof(T));
-		vkUnmapMemory(device, memory);
-	}
+	void* data;
+	vkMapMemory(device, memory, 0, sizeof(T), 0, &data);
+	std::memcpy(data, &ubo, sizeof(T));
+	vkUnmapMemory(device, memory);
 }

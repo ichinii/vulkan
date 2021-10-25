@@ -63,7 +63,7 @@ auto createVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkComm
 	return std::make_tuple(memory, buffer, vertices.size());
 }
 
-auto fillCommandBuffers(const std::vector<VkCommandBuffer>& commandBuffers, const std::vector<VkFramebuffer>& framebuffers, VkRenderPass renderPass, VkPipeline pipeline, VkPipelineLayout pipelineLayout,	const std::vector<VkBuffer>& vertexBuffers, const std::vector<VkDescriptorSet>& descriptorSets, std::size_t verticesCount)
+auto fillCommandBuffer(VkCommandBuffer commandBuffer, VkFramebuffer framebuffer, VkRenderPass renderPass, VkPipeline pipeline, VkPipelineLayout pipelineLayout,	const std::vector<VkBuffer>& vertexBuffers, VkDescriptorSet& descriptorSet, std::size_t verticesCount)
 {
 	VkCommandBufferBeginInfo beginInfo;
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -71,45 +71,43 @@ auto fillCommandBuffers(const std::vector<VkCommandBuffer>& commandBuffers, cons
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 	beginInfo.pInheritanceInfo = nullptr;
 
-	for (std::size_t i = 0; i < commandBuffers.size(); ++i) {
-		error << vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
+	error << vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
-		VkRenderPassBeginInfo renderPassBeginInfo;
-		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassBeginInfo.pNext = nullptr;
-		renderPassBeginInfo.renderPass = renderPass;
-		renderPassBeginInfo.framebuffer = framebuffers[i];
-		renderPassBeginInfo.renderArea.offset = {0, 0};
-		renderPassBeginInfo.renderArea.extent = {windowSize.x, windowSize.y};
+	VkRenderPassBeginInfo renderPassBeginInfo;
+	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassBeginInfo.pNext = nullptr;
+	renderPassBeginInfo.renderPass = renderPass;
+	renderPassBeginInfo.framebuffer = framebuffer;
+	renderPassBeginInfo.renderArea.offset = {0, 0};
+	renderPassBeginInfo.renderArea.extent = {windowSize.x, windowSize.y};
 
-		VkClearValue clearValue = {{{.01f, .06f, .1f, 1.f}}};
-		renderPassBeginInfo.clearValueCount = 1;
-		renderPassBeginInfo.pClearValues = &clearValue;
+	VkClearValue clearValue = {{{.01f, .06f, .1f, 1.f}}};
+	renderPassBeginInfo.clearValueCount = 1;
+	renderPassBeginInfo.pClearValues = &clearValue;
 
-		VkViewport viewport;
-		viewport.x = 0;
-		viewport.y = 0;
-		viewport.width = windowSize.x;
-		viewport.height = windowSize.y;
-		viewport.minDepth = 0.f;
-		viewport.maxDepth = 1.f;
+	VkViewport viewport;
+	viewport.x = 0;
+	viewport.y = 0;
+	viewport.width = windowSize.x;
+	viewport.height = windowSize.y;
+	viewport.minDepth = 0.f;
+	viewport.maxDepth = 1.f;
 
-		VkRect2D scissor;
-		scissor.offset = {0, 0};
-		scissor.extent = {windowSize.x, windowSize.y};
+	VkRect2D scissor;
+	scissor.offset = {0, 0};
+	scissor.extent = {windowSize.x, windowSize.y};
 
-		vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-		auto offsets = std::vector<VkDeviceSize>(vertexBuffers.size(), 0);
-		vkCmdBindVertexBuffers(commandBuffers[i], 0, vertexBuffers.size(), vertexBuffers.data(), offsets.data());
-		vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
-		vkCmdSetViewport(commandBuffers[i], 0, 1, &viewport);
-		vkCmdSetScissor(commandBuffers[i], 0, 1, &scissor);
-		vkCmdDraw(commandBuffers[i], verticesCount, 1, 0, 0);
-		vkCmdEndRenderPass(commandBuffers[i]);
+	vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+	auto offsets = std::vector<VkDeviceSize>(vertexBuffers.size(), 0);
+	vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), offsets.data());
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+	vkCmdDraw(commandBuffer, verticesCount, 1, 0, 0);
+	vkCmdEndRenderPass(commandBuffer);
 
-		error << vkEndCommandBuffer(commandBuffers[i]);
-	}
+	error << vkEndCommandBuffer(commandBuffer);
 }
 
 auto createSemaphores(VkDevice device)
@@ -127,11 +125,16 @@ auto createSemaphores(VkDevice device)
 	return std::make_tuple(semaphoreImageAvailable, semaphoreRenderingDone);
 }
 
-auto render(VkDevice device, VkSwapchainKHR swapchain, VkQueue queue, const std::vector<VkCommandBuffer>& commandBuffers, VkSemaphore semaphoreImageAvailable, VkSemaphore semaphoreRenderingDone)
+auto acquireNextImage(VkDevice device, VkSwapchainKHR swapchain, VkSemaphore semaphoreImageAvailable)
 {
 	std::uint32_t imageIndex;
 	error << vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<std::uint64_t>::max(), semaphoreImageAvailable, VK_NULL_HANDLE, &imageIndex);
 
+	return imageIndex;
+}
+
+auto render(VkSwapchainKHR swapchain, VkQueue queue, VkCommandBuffer commandBuffer, VkSemaphore semaphoreImageAvailable, VkSemaphore semaphoreRenderingDone, std::uint32_t imageIndex)
+{
 	VkSubmitInfo submitInfo;
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.pNext = nullptr;
@@ -140,7 +143,7 @@ auto render(VkDevice device, VkSwapchainKHR swapchain, VkQueue queue, const std:
 	VkPipelineStageFlags waitStages[] {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 	submitInfo.pWaitDstStageMask = waitStages;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+	submitInfo.pCommandBuffers = &commandBuffer;
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &semaphoreRenderingDone;
 
@@ -159,32 +162,11 @@ auto render(VkDevice device, VkSwapchainKHR swapchain, VkQueue queue, const std:
 	error << vkQueuePresentKHR(queue, &presentInfo);
 }
 
-// auto recreateSwapChain(VkDevice device, VkSurfaceKHR surface, VkSwapchainKHR* swapchain, std::vector<VkImageView>* imageViews, VkRenderPass* renderPass, std::vector<VkFramebuffer>* frameBuffers, VkCommandPool* commandPool, std::vector<VkCommandBuffer>* commandBuffers)
-// {
-// 	vkFreeCommandBuffers(device, *commandPool, imageViews->size(), commandBuffers->data()); // implicit when pool gets destroyed
-// 	vkDestroyCommandPool(device, *commandPool, nullptr);
-// 	for (const auto& framebuffer : *frameBuffers)
-// 		vkDestroyFramebuffer(device, framebuffer, nullptr);
-// 	vkDestroyRenderPass(device, *renderPass, nullptr);
-// 	for (const auto& imageView : *imageViews)
-// 		vkDestroyImageView(device, imageView, nullptr);
-// 	vkDestroySwapchainKHR(device, *swapchain, nullptr);
-//
-// 	*swapchain = createSwapchain(device, surface);
-// 	*imageViews = createSwapchainImageViews(device, *swapchain);
-// 	*renderPass = createRenderPass(device);
-// 	*frameBuffers = createFrameBuffers(device, *imageViews, *renderPass);
-// 	*commandPool = createCommandPool(device);
-// 	*commandBuffers = createCommandBuffers(device, *commandPool, imageViews->size());
-// }
-
-int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
+auto run()
 {
 	std::cout << std::boolalpha;
 	auto startTime = cloc::now();
 	auto sleepTime = 0ms;
-
-	initGlfw();
 
 	auto instance = Instance();
 	auto pipeline = PolygonPipeline::createPipeline(instance);
@@ -222,8 +204,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 		ubo.mvp = glm::rotate(ubo.mvp, .1f * glm::sin(elapsedTime.count() / 1000.f), glm::vec3(0, 0, 1));
 		uboUniform.update(ubo);
 
-		fillCommandBuffers(instance.commandBuffers, instance.frameBuffers, instance.renderPass, pipeline->pipeline, pipeline->layout, {vertexBuffer}, pipeline->descriptorSets, verticesCount);
-		render(instance.device, instance.swapchain, instance.queue, instance.commandBuffers, semaphoreImageAvailable, semaphoreRenderingDone);
+		auto imageIndex = acquireNextImage(instance.device, instance.swapchain, semaphoreImageAvailable);
+		fillCommandBuffer(instance.commandBuffer, instance.frameBuffers[imageIndex], instance.renderPass, pipeline->pipeline, pipeline->layout, {vertexBuffer}, pipeline->descriptorSet, verticesCount);
+		render(instance.swapchain, instance.queue, instance.commandBuffer, semaphoreImageAvailable, semaphoreRenderingDone, imageIndex);
 
 		// wait because we have no fence
 		vkDeviceWaitIdle(instance.device);
@@ -247,7 +230,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
 	vkDestroySemaphore(instance.device, semaphoreRenderingDone, nullptr);
 	vkDestroySemaphore(instance.device, semaphoreImageAvailable, nullptr);
+}
 
+int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
+{
+	initGlfw();
+	run();
 	glfwTerminate();
 
 	return 0;
