@@ -21,8 +21,6 @@ public:
 
 	VkSwapchainKHR swapchain;
 	std::vector<VkImageView> imageViews;
-	std::vector<VkFramebuffer> frameBuffers;
-	Resource<VkRenderPass> renderPass;
 	Resource<VkCommandPool> commandPool;
 	Resource<VkCommandBuffer> commandBuffer;
 

@@ -52,7 +52,7 @@ using AttributeInfos = std::vector<AttributeInfo>;
 
 class Pipeline {
 public:
-	Pipeline(const Instance& instance, UniformInfos uniformInfos, AttributeInfos attributeInfos, std::size_t vertexSize);
+	Pipeline(const Instance& instance, VkRenderPass renderPass, UniformInfos uniformInfos, AttributeInfos attributeInfos, std::size_t vertexSize);
 	Pipeline(const Pipeline&) = delete;
 	Pipeline(Pipeline&&) = default;
 	~Pipeline();

@@ -325,7 +325,7 @@ auto createPipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout p
 	return graphicsPipeline;
 }
 
-Pipeline::Pipeline(const Instance& instance, UniformInfos uniformInfos_, AttributeInfos attributeInfos_, std::size_t vertexSize)
+Pipeline::Pipeline(const Instance& instance, VkRenderPass renderPass, UniformInfos uniformInfos_, AttributeInfos attributeInfos_, std::size_t vertexSize)
 {
 	device = instance.device;
 	uniformInfos = std::move(uniformInfos_);
@@ -336,7 +336,7 @@ Pipeline::Pipeline(const Instance& instance, UniformInfos uniformInfos_, Attribu
 
 	descriptorLayout = createDescriptorSetLayout(device, uniformInfos);
 	layout = createPipelineLayout(device, descriptorLayout);
-	pipeline = createPipeline(device, instance.renderPass, layout, shaderVert, shaderFrag, attributeInfos, vertexSize);
+	pipeline = createPipeline(device, renderPass, layout, shaderVert, shaderFrag, attributeInfos, vertexSize);
 	descriptorPool = createDescriptorPool(instance.device, uniformInfos, instance.imageViews.size());
 	descriptorSet = createDescriptorSets(instance.device, descriptorLayout, descriptorPool);
 }

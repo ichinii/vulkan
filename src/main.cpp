@@ -162,6 +162,80 @@ auto render(VkSwapchainKHR swapchain, VkQueue queue, VkCommandBuffer commandBuff
 	error << vkQueuePresentKHR(queue, &presentInfo);
 }
 
+auto createRenderPass(VkDevice device)
+{
+	VkAttachmentDescription attachmentDescription;
+	attachmentDescription.flags = 0;
+	attachmentDescription.format = image_format;
+	attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkAttachmentReference attachmentReference;
+	attachmentReference.attachment = 0;
+	attachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpassDescription;
+	subpassDescription.flags = 0;
+	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpassDescription.inputAttachmentCount = 0;
+	subpassDescription.pInputAttachments = nullptr;
+	subpassDescription.colorAttachmentCount = 1;
+	subpassDescription.pColorAttachments = &attachmentReference;
+	subpassDescription.pResolveAttachments = nullptr;
+	subpassDescription.pDepthStencilAttachment = nullptr;
+	subpassDescription.preserveAttachmentCount = 0;
+	subpassDescription.pPreserveAttachments = nullptr;
+
+	VkSubpassDependency subpassDependency;
+	subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	subpassDependency.dstSubpass = 0;
+	subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependency.srcAccessMask = 0;
+	subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	subpassDependency.dependencyFlags = 0;
+
+	VkRenderPassCreateInfo renderPassInfo;
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.pNext = nullptr;
+	renderPassInfo.flags = 0;
+	renderPassInfo.attachmentCount = 1;
+	renderPassInfo.pAttachments = &attachmentDescription;
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpassDescription;
+	renderPassInfo.dependencyCount = 1;
+	renderPassInfo.pDependencies = &subpassDependency;
+
+	VkRenderPass renderPass;
+	error << vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass);
+	return renderPass;
+}
+
+auto createFrameBuffers(VkDevice device, const std::vector<VkImageView>& images, VkRenderPass renderPass)
+{
+	auto framebuffers = std::vector<VkFramebuffer>(images.size());
+	for (std::size_t i = 0; i < images.size(); ++i) {
+		VkFramebufferCreateInfo framebufferInfo;
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.pNext = nullptr;
+		framebufferInfo.flags = 0;
+		framebufferInfo.renderPass = renderPass;
+		framebufferInfo.attachmentCount = 1;
+		framebufferInfo.pAttachments = &images[i];
+		framebufferInfo.width = windowSize.x;
+		framebufferInfo.height = windowSize.y;
+		framebufferInfo.layers = 1;
+
+		error << vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]);
+	}
+	return framebuffers;
+}
+
 auto run()
 {
 	std::cout << std::boolalpha;
@@ -169,7 +243,10 @@ auto run()
 	auto sleepTime = 0ms;
 
 	auto instance = Instance();
-	auto pipeline = PolygonPipeline::createPipeline(instance);
+	auto renderPass = createRenderPass(instance.device);
+	auto frameBuffers = createFrameBuffers(instance.device, instance.imageViews, renderPass);
+
+	auto pipeline = PolygonPipeline::createPipeline(instance, renderPass);
 	auto uniformInfos = pipeline->uniformInfos;
 	auto uniforms = PolygonPipeline::createUniforms(instance);
 	auto& uboUniform = std::get<UniformBuffer>(uniforms[0].buffer);
@@ -205,7 +282,7 @@ auto run()
 		uboUniform.update(ubo);
 
 		auto imageIndex = acquireNextImage(instance.device, instance.swapchain, semaphoreImageAvailable);
-		fillCommandBuffer(instance.commandBuffer, instance.frameBuffers[imageIndex], instance.renderPass, pipeline->pipeline, pipeline->layout, {vertexBuffer}, pipeline->descriptorSet, verticesCount);
+		fillCommandBuffer(instance.commandBuffer, frameBuffers[imageIndex], renderPass, pipeline->pipeline, pipeline->layout, {vertexBuffer}, pipeline->descriptorSet, verticesCount);
 		render(instance.swapchain, instance.queue, instance.commandBuffer, semaphoreImageAvailable, semaphoreRenderingDone, imageIndex);
 
 		// wait because we have no fence
@@ -230,6 +307,10 @@ auto run()
 
 	vkDestroySemaphore(instance.device, semaphoreRenderingDone, nullptr);
 	vkDestroySemaphore(instance.device, semaphoreImageAvailable, nullptr);
+
+	for (const auto& framebuffer : frameBuffers)
+		vkDestroyFramebuffer(instance.device, framebuffer, nullptr);
+	vkDestroyRenderPass(instance.device, renderPass, nullptr);
 }
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])

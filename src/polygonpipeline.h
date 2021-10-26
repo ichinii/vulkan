@@ -68,7 +68,7 @@ inline auto createUniforms(const Instance& instance) {
 	return uniforms;
 }
 
-inline auto createPipeline(const Instance& instance) {
+inline auto createPipeline(const Instance& instance, VkRenderPass renderPass) {
 	auto textures = Textures();
 	textures.emplace_back(Texture::fromGenerator(instance, glm::uvec2(8, 8), [] (glm::vec2 uv) {
 		uv = glm::abs(uv);
@@ -80,6 +80,7 @@ inline auto createPipeline(const Instance& instance) {
 
 	auto pipeline = std::make_unique<Pipeline>(
 		instance,
+		renderPass,
 		getUniformInfos(),
 		getAttributeInfos(),
 		sizeof(PolygonPipeline::Vertex)
