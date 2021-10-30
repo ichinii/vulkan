@@ -1,22 +1,14 @@
 #pragma once
 
-#include <cassert>
-#include <cstdint>
-#include <vector>
-#include <locale>
-#include <fstream>
-#include <filesystem>
-#include <iostream>
-#include "graphics.h"
 #include "log.h"
 
 using ShaderCodeChar = std::uint32_t;
 using ShaderCode = std::vector<ShaderCodeChar>;
 
-inline ShaderCode readShaderFile(const std::filesystem::path& filepath)
+inline ShaderCode readShaderFile(const char* filepath)
 {
 	std::ifstream file(filepath, std::ios::binary | std::ios::ate);
-	assert(file);
+	assert(file.is_open());
 	std::size_t size = file.tellg();
 	assert(size % sizeof(ShaderCodeChar) == 0);
 	file.seekg(0);
@@ -25,8 +17,9 @@ inline ShaderCode readShaderFile(const std::filesystem::path& filepath)
 	return content;
 }
 
-inline VkShaderModule createShader(VkDevice device, const ShaderCode& code)
+inline VkShaderModule createShader(VkDevice device, const char* filepath)
 {
+	auto code = readShaderFile(filepath);
 	VkShaderModuleCreateInfo shaderInfo;
 	shaderInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	shaderInfo.pNext = nullptr;

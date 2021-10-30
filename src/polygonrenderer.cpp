@@ -16,7 +16,7 @@ void PolygonRenderer::clear()
 	m_vertices.clear();
 }
 
-PolygonPipeline::Vertices PolygonRenderer::flush()
+DeferredGeometryPipeline::Vertices PolygonRenderer::flush()
 {
 	return std::move(m_vertices);
 }
@@ -42,8 +42,8 @@ void PolygonRenderer::drawCircle(glm::vec2 p, float r, glm::vec3 c)
 		auto dir2 = glm::vec2(glm::cos(a2), glm::sin(a2));
 		auto pos = r * dir;
 		auto pos2 = r * dir2;
-		m_vertices.push_back(PolygonPipeline::Vertex{p, c * .5f, {.5, .5}});
-		m_vertices.push_back(PolygonPipeline::Vertex{p + pos, c, dir * .5f + .5f});
-		m_vertices.push_back(PolygonPipeline::Vertex{p + pos2, c, dir2 * .5f + .5f});
+		m_vertices.push_back(DeferredGeometryPipeline::Vertex{p, c * .5f, {.5, .5}});
+		m_vertices.push_back(DeferredGeometryPipeline::Vertex{p + pos, c, dir * .5f + .5f});
+		m_vertices.push_back(DeferredGeometryPipeline::Vertex{p + pos2, c, dir2 * .5f + .5f});
 	}
 }

@@ -1,21 +1,23 @@
 #include <cassert>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <chrono>
 #include <thread>
-#include <cstring>
 #include <algorithm>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "log.h"
 #include "graphics.h"
 #include "instance.h"
 #include "pipeline.h"
-#include "polygonpipeline.h"
+#include "deferredgeometrypipeline.h"
 #include "texture.h"
 #include "polygonrenderer.h"
 #include "shader.h"
-#include "log.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 using namespace std::chrono_literals;
 using cloc = std::chrono::steady_clock;
@@ -246,12 +248,15 @@ auto run()
 	auto renderPass = createRenderPass(instance.device);
 	auto frameBuffers = createFrameBuffers(instance.device, instance.imageViews, renderPass);
 
-	auto pipeline = PolygonPipeline::createPipeline(instance, renderPass);
-	auto uniformInfos = pipeline->uniformInfos;
-	auto uniforms = PolygonPipeline::createUniforms(instance);
+	auto shaderVert = createShader(instance.device, "res/shader.vert.spv");
+	auto shaderFrag = createShader(instance.device, "res/shader.frag.spv");
+	auto pipeline = DeferredGeometryPipeline::createDeferredGeometryPipelineRaii(instance.device, shaderVert, shaderFrag, renderPass, 0);
+	vkDestroyShaderModule(instance.device, shaderVert, nullptr);
+	vkDestroyShaderModule(instance.device, shaderFrag, nullptr);
+	auto uniforms = DeferredGeometryPipeline::createUniforms(instance);
 	auto& uboUniform = std::get<UniformBuffer>(uniforms[0].buffer);
 
-	pipeline->updateUniforms(uniforms);
+	pipeline.updateUniforms(uniforms);
 
 	// auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(device, physicalDevice, commandPool, queue);
 	auto [semaphoreImageAvailable, semaphoreRenderingDone] = createSemaphores(instance.device);
@@ -272,7 +277,7 @@ auto run()
 	while (!glfwWindowShouldClose(instance.window)) {
 		auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(cloc::now() - startTime) - sleepTime;
 
-		auto ubo = PolygonPipeline::Ubo();
+		auto ubo = DeferredGeometryPipeline::Ubo();
 		ubo.mvp = glm::mat4(1.f);
 		ubo.mvp = ubo.mvp * glm::perspective(70.f, static_cast<float>(windowSize.x) / windowSize.y, .1f, 100.f);
 		ubo.mvp = ubo.mvp * glm::lookAt(glm::vec3(0, 0, 2.), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
@@ -282,7 +287,7 @@ auto run()
 		uboUniform.update(ubo);
 
 		auto imageIndex = acquireNextImage(instance.device, instance.swapchain, semaphoreImageAvailable);
-		fillCommandBuffer(instance.commandBuffer, frameBuffers[imageIndex], renderPass, pipeline->pipeline, pipeline->layout, {vertexBuffer}, pipeline->descriptorSet, verticesCount);
+		fillCommandBuffer(instance.commandBuffer, frameBuffers[imageIndex], renderPass, pipeline.pipeline, pipeline.layout, {vertexBuffer}, pipeline.descriptorSet, verticesCount);
 		render(instance.swapchain, instance.queue, instance.commandBuffer, semaphoreImageAvailable, semaphoreRenderingDone, imageIndex);
 
 		// wait because we have no fence

@@ -2,23 +2,10 @@
 
 #include <unordered_map>
 #include <string>
+#include <fstream>
 #include <iostream>
 #include <functional>
 #include "graphics.h"
-
-#define concat2(a, b) a ## b
-#define concat(a, b) concat2(a, b)
-#define unique_name concat(unique_name_, __LINE__)
-#define error                                                                      \
-struct {                                                                           \
-	void operator<< (VkResult error_code) {                                          \
-		if (error_code != VK_SUCCESS) {                                                \
-			std::cout << "fatal: vukan error (" << __FILE__ << ": " << __LINE__ << "): " \
-				<< error_code << " ("<< debug::error_string[error_code] << ")" << std::endl; \
-			std::abort();                                                                \
-		}                                                                              \
-	}                                                                                \
-} unique_name; unique_name
 
 namespace debug {
 
@@ -41,7 +28,7 @@ extern void dump(const VkMemoryRequirements& requirements);
 extern void dump(const VkMemoryPropertyFlags& bits);
 
 template <typename T>
-inline void dump(std::string name, const std::vector<T>& container) 
+inline void dump(std::string name, const std::vector<T>& container)
 {
 	std::cout << name << " count: " << container.size() << std::endl;
 	std::cout << name << std::endl;
@@ -50,7 +37,7 @@ inline void dump(std::string name, const std::vector<T>& container)
 }
 
 template <typename T>
-inline void dump_direct(const std::string& name, const std::vector<T>& container) 
+inline void dump_direct(const std::string& name, const std::vector<T>& container)
 {
 	std::cout << name << std::endl;
 	for (const auto& element : container) {
@@ -58,4 +45,19 @@ inline void dump_direct(const std::string& name, const std::vector<T>& container
 	}
 }
 
+} // namespace debug
+
+struct ErrorObject {
+	const char* file;
+	int line;
+
+	void operator<< (VkResult error_code) {
+		if (error_code != VK_SUCCESS) {
+			std::cout << "fatal: vukan error (" << file << ": " << line << "): "
+				<< error_code << " (" << debug::error_string[error_code] << ")" << std::endl;
+			std::abort();
+		}
+	}
 };
+
+#define error ErrorObject {__FILE__, __LINE__}

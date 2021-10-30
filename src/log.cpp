@@ -687,4 +687,4 @@ void dump(const VkMemoryPropertyFlags& bits)
 		<< "\t\t\tVK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD: " << (0 != (bits & VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD)) << std::endl;
 }
 
-};
+}

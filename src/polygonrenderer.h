@@ -1,6 +1,6 @@
 #pragma once
 
-#include "polygonpipeline.h"
+#include "deferredgeometrypipeline.h"
 
 class PolygonRenderer {
 public:
@@ -8,7 +8,7 @@ public:
 	~PolygonRenderer();
 
 	void clear();
-	PolygonPipeline::Vertices flush();
+	DeferredGeometryPipeline::Vertices flush();
 
 	void drawTriangle(
 		glm::vec2 p0, glm::vec3 c0, glm::vec2 t0,
@@ -17,5 +17,5 @@ public:
 	void drawCircle(glm::vec2 p, float r, glm::vec3 c);
 
 private:
-	PolygonPipeline::Vertices m_vertices;
+	DeferredGeometryPipeline::Vertices m_vertices;
 };

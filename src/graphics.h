@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <vector>
-#include <filesystem>
+// #include <filesystem>
 #include <functional>
 
 constexpr const auto window_size = glm::uvec2{1280, 720};

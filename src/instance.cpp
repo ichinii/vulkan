@@ -315,8 +315,8 @@ Instance::~Instance()
 		vkDestroyImageView(device, imageView, nullptr);
 	vkDestroySwapchainKHR(device, swapchain, nullptr);
 
-	vkDestroyDevice(device, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
+	vkDestroyDevice(device, nullptr);
 	vkDestroyInstance(instance, nullptr);
 
 	glfwDestroyWindow(window);

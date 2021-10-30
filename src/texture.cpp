@@ -202,7 +202,7 @@ Texture Texture::fromGenerator(const Instance& instance, glm::uvec2 size, std::f
 	return Texture::fromImage(instance, Image{colors, size});
 }
 
-Texture Texture::fromFile(const Instance& instance, std::filesystem::path filepath) {
+Texture Texture::fromFile(const Instance& instance, const char* filepath) {
 	assert(false), (void)"unimplemented";
 	return {};
 }

@@ -22,7 +22,7 @@ struct Texture {
 	// parameter uv from (-1, -1) to (1, 1)
 	using GeneratorF = glm::vec4(glm::vec2 uv);
 	static Texture fromGenerator(const Instance& instance, glm::uvec2 size, std::function<GeneratorF> f);
-	static Texture fromFile(const Instance& instance, std::filesystem::path filepath);
+	static Texture fromFile(const Instance& instance, const char* filepath);
 	static Texture fromImage(const Instance& instance, Image Image);
 
 	// void update();
