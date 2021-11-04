@@ -198,7 +198,7 @@ auto createRenderPass(VkDevice device)
 
 	VkAttachmentReference depthAttachmentReference;
 	depthAttachmentReference.attachment = 1;
-	depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+	depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 	VkSubpassDescription subpassDescription;
 	subpassDescription.flags = 0;
@@ -209,7 +209,6 @@ auto createRenderPass(VkDevice device)
 	subpassDescription.pColorAttachments = &colorAttachmentReference;
 	subpassDescription.pResolveAttachments = nullptr;
 	subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
-	subpassDescription.pDepthStencilAttachment = nullptr;
 	subpassDescription.preserveAttachmentCount = 0;
 	subpassDescription.pPreserveAttachments = nullptr;
 
@@ -299,11 +298,11 @@ auto run()
 	auto [semaphoreImageAvailable, semaphoreRenderingDone] = createSemaphores(instance.device);
 
 	auto renderer = PolygonRenderer();
-	renderer.drawCircle(glm::vec2(0), 1.f, glm::vec3(1));
+	renderer.drawCircle(glm::vec2(0), 1.f, glm::vec3(0.5));
 	renderer.drawTriangle(
-		glm::vec2(-1, -1), glm::vec3(1), glm::vec2(0, 0),
-		glm::vec2(1, -1), glm::vec3(1), glm::vec2(1, 0),
-		glm::vec2(1, 1), glm::vec3(1), glm::vec2(1, 1));
+		glm::vec2(-1, -1), glm::vec3(.3), glm::vec2(0, 0),
+		glm::vec2(1, -1), glm::vec3(.3), glm::vec2(1, 0),
+		glm::vec2(1, 1), glm::vec3(.3), glm::vec2(1, 1));
 	auto vertices = renderer.flush();
 	assert(vertices.size() > 0);
 	auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, vertices);
