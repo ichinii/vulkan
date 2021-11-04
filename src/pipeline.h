@@ -14,7 +14,7 @@ inline auto getUniformBindings(const UniformInfos& uniformInfos) {
 	auto bindings = std::vector<VkDescriptorSetLayoutBinding>(uniformInfos.size());
 
 	for (std::size_t i = 0; i < uniformInfos.size(); ++i) {
-		auto& uniformInfo	= uniformInfos[i];
+		auto& uniformInfo = uniformInfos[i];
 		auto& binding = bindings[i];
 		binding.binding = uniformInfo.binding;
 		binding.descriptorType = uniformInfo.type;
@@ -43,7 +43,29 @@ inline auto createDescriptorSetLayout(VkDevice device, const UniformInfos& unifo
 	return descriptorSetLayout;
 }
 
-inline auto createPipelineLayout(VkDevice device, VkDescriptorSetLayout& descriptorLayout)
+inline auto createLightingDescriptorSetLayout(VkDevice device)
+{
+	VkDescriptorSetLayoutBinding albedoInputAttachmentBinding;
+	albedoInputAttachmentBinding.binding = 0;
+	albedoInputAttachmentBinding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	albedoInputAttachmentBinding.descriptorCount = 1;
+	albedoInputAttachmentBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	albedoInputAttachmentBinding.pImmutableSamplers = nullptr; // Optional
+
+	VkDescriptorSetLayoutCreateInfo layoutInfo;
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.pNext = nullptr;
+	layoutInfo.flags = 0;
+	layoutInfo.bindingCount = 1;
+	layoutInfo.pBindings = &albedoInputAttachmentBinding;
+
+	VkDescriptorSetLayout descriptorSetLayout;
+	error << vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout);
+
+	return descriptorSetLayout;
+}
+
+inline auto createPipelineLayout(VkDevice device, const VkDescriptorSetLayout& descriptorLayout)
 {
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo;
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -81,6 +103,26 @@ inline auto createDescriptorPool(VkDevice device, const UniformInfos& uniformInf
 	return pool;
 }
 
+inline auto createLightingDescriptorPool(VkDevice device, std::size_t size)
+{
+	VkDescriptorPoolSize poolSize;
+	poolSize.descriptorCount = 1;
+	poolSize.type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+
+	VkDescriptorPoolCreateInfo poolInfo;
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.flags = 0;
+	poolInfo.maxSets = size;
+	poolInfo.pNext = nullptr;
+	poolInfo.poolSizeCount = 1;
+	poolInfo.pPoolSizes = &poolSize;
+
+	VkDescriptorPool pool;
+	error << vkCreateDescriptorPool(device, &poolInfo, nullptr, &pool);
+
+	return pool;
+}
+
 inline auto createDescriptorSets(VkDevice device, VkDescriptorSetLayout layout, VkDescriptorPool pool)
 {
 	VkDescriptorSetAllocateInfo allocInfo;
@@ -97,6 +139,77 @@ inline auto createDescriptorSets(VkDevice device, VkDescriptorSetLayout layout, 
 }
 
 inline auto updateDescriptor(
+		VkDevice device,
+		VkDescriptorSet& descriptorSet,
+		const Uniforms& uniforms)
+{
+	auto bufferInfos = std::vector<VkDescriptorBufferInfo>(uniforms.size());
+	auto imageInfos = std::vector<VkDescriptorImageInfo>(uniforms.size());
+
+	for (std::size_t j = 0; j < uniforms.size(); ++j) {
+		auto& uniform = uniforms[j];
+
+		std::visit(overloaded{
+			[&] (const UniformBuffer& buffer) {
+				auto& bufferInfo = bufferInfos[j];
+				bufferInfo.buffer = buffer.buffer;
+				bufferInfo.offset = 0;
+				bufferInfo.range = buffer.size;
+			},
+			[&] (const Texture& texture) {
+				auto& imageInfo = imageInfos[j];
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo.imageView = texture.view;
+				imageInfo.sampler = texture.sampler;
+			},
+		}, uniform.buffer);
+	}
+
+	auto descriptorWrites = std::vector<VkWriteDescriptorSet>(uniforms.size());
+	for (std::size_t j = 0; j < uniforms.size(); ++j) {
+		auto& uniform = uniforms[j];
+		auto& write = descriptorWrites[j];
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.pNext = nullptr;
+		write.dstSet = descriptorSet;
+		write.dstBinding = uniform.binding;
+		write.dstArrayElement = 0;
+		write.descriptorCount = 1;
+		write.descriptorType = uniform.type;
+		write.pBufferInfo = &bufferInfos[j];
+		write.pImageInfo = &imageInfos[j];
+		write.pTexelBufferView = nullptr;
+	}
+
+	vkUpdateDescriptorSets(device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+}
+
+inline auto updateDescriptor(
+		VkDevice device,
+		VkDescriptorSet& descriptorSet,
+		VkImageView view)
+{
+	VkDescriptorImageInfo imageInfo;
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfo.imageView = view;
+	imageInfo.sampler = VK_NULL_HANDLE;
+
+	VkWriteDescriptorSet write;
+	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	write.pNext = nullptr;
+	write.dstSet = descriptorSet;
+	write.dstBinding = 0;
+	write.dstArrayElement = 0;
+	write.descriptorCount = 1;
+	write.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	write.pBufferInfo = nullptr;
+	write.pImageInfo = &imageInfo;
+	write.pTexelBufferView = nullptr;
+
+	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+}
+
+inline auto updateLightingDescriptor(
 		VkDevice device,
 		const Uniforms& uniforms,
 		VkDescriptorSet& descriptorSet)
@@ -193,25 +306,35 @@ inline auto getAttributeBindings(const AttributeInfos& attributeInfos)
 }
 
 inline auto getVertexInputInfo(
-		const VkVertexInputBindingDescription& vertexBindingInfo,
+		const VkVertexInputBindingDescription* vertexBindingInfo,
 		const std::vector<VkVertexInputAttributeDescription>& vertexAttribs) {
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo;
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.pNext = nullptr;
 	vertexInputInfo.flags = 0;
-	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.pVertexBindingDescriptions = &vertexBindingInfo;
+	vertexInputInfo.vertexBindingDescriptionCount = vertexBindingInfo ? 1 : 0;
+	vertexInputInfo.pVertexBindingDescriptions = vertexBindingInfo;
 	vertexInputInfo.vertexAttributeDescriptionCount = vertexAttribs.size();
 	vertexInputInfo.pVertexAttributeDescriptions = vertexAttribs.data();
 	return vertexInputInfo;
 }
 
-inline auto getInputAssemblyInfo() {
+inline auto getInputAssemblyInfoTriangleList() {
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
 	inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssemblyInfo.pNext = nullptr;
 	inputAssemblyInfo.flags = 0;
 	inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
+	return inputAssemblyInfo;
+}
+
+inline auto getInputAssemblyInfoTriangleStrip() {
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
+	inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	inputAssemblyInfo.pNext = nullptr;
+	inputAssemblyInfo.flags = 0;
+	inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 	inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
 	return inputAssemblyInfo;
 }
@@ -321,7 +444,24 @@ inline auto getDynamicStateInfo(const std::vector<VkDynamicState>& dynamicStates
 	return dynamicStateInfo;
 }
 
-inline auto getDepthStencilInfo() {
+inline auto getDepthStencilInfoDisabled() {
+	VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
+	depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depthStencilInfo.pNext = nullptr;
+	depthStencilInfo.flags = 0;
+	depthStencilInfo.depthTestEnable = VK_FALSE;
+	depthStencilInfo.depthWriteEnable = VK_FALSE;
+	depthStencilInfo.depthCompareOp = VK_COMPARE_OP_NEVER;
+	depthStencilInfo.depthBoundsTestEnable = VK_FALSE;
+	depthStencilInfo.stencilTestEnable = VK_FALSE;
+	depthStencilInfo.front = {};
+	depthStencilInfo.back = {};
+	depthStencilInfo.minDepthBounds = 0.0f;
+	depthStencilInfo.maxDepthBounds = 1.0f;
+	return depthStencilInfo;
+}
+
+inline auto getDepthStencilInfoDepthEnabled() {
 	VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
 	depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencilInfo.pNext = nullptr;
@@ -376,7 +516,7 @@ inline auto getGraphicsPipelineInfo(
 
 class GraphicsPipelineRaii {
 public:
-	GraphicsPipelineRaii(VkDevice device, VkPipelineLayout layout, VkPipeline pipeline, VkDescriptorPool desccriptorPool, VkDescriptorSetLayout descriptorLayout, VkDescriptorSet descriptorSet);
+	GraphicsPipelineRaii(VkDevice device, VkPipelineLayout layout, VkPipeline pipeline, VkDescriptorSetLayout descriptorLayout, VkDescriptorPool desccriptorPool, VkDescriptorSet descriptorSet);
 	GraphicsPipelineRaii(const GraphicsPipelineRaii&) = delete;
 	GraphicsPipelineRaii(GraphicsPipelineRaii&&) = default;
 	~GraphicsPipelineRaii();
@@ -384,15 +524,13 @@ public:
 	GraphicsPipelineRaii& operator= (const GraphicsPipelineRaii&) = delete;
 	GraphicsPipelineRaii& operator= (GraphicsPipelineRaii&&) = default;
 
-	void updateUniforms(const Uniforms& uniforms);
-
 	VkDevice device = VK_NULL_HANDLE;
 	// Resource<VkShaderModule> shaderVert = VK_NULL_HANDLE;
 	// Resource<VkShaderModule> shaderFrag = VK_NULL_HANDLE;
 	Resource<VkPipelineLayout> layout = VK_NULL_HANDLE;
 	Resource<VkPipeline> pipeline = VK_NULL_HANDLE;
-	Resource<VkDescriptorPool> descriptorPool = VK_NULL_HANDLE;
 	Resource<VkDescriptorSetLayout> descriptorLayout = VK_NULL_HANDLE;
+	Resource<VkDescriptorPool> descriptorPool = VK_NULL_HANDLE;
 	Resource<VkDescriptorSet> descriptorSet = VK_NULL_HANDLE;
 };
 

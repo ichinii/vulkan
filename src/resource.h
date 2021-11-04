@@ -22,5 +22,8 @@ struct Resource {
 	const T& operator* () const { return item; }
 	T& operator * () { return item; }
 
+	const T* operator& () const { return &item; }
+	T* operator& () { return &item; }
+
 	T item = {};
 };

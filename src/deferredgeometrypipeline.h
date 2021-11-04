@@ -51,16 +51,16 @@ inline auto createDeferredGeometryPipeline(VkDevice device, VkRenderPass renderP
 	};
 	auto vertexBindingInfo = getBindingInfo(sizeof(Vertex));
 	auto vertexAttribs = getAttributeBindings(attributeInfos);
-	auto vertexInputInfo = getVertexInputInfo(vertexBindingInfo, vertexAttribs);
-	auto inputAssemblyInfo = getInputAssemblyInfo();
+	auto vertexInputInfo = getVertexInputInfo(&vertexBindingInfo, vertexAttribs);
+	auto inputAssemblyInfo = getInputAssemblyInfoTriangleList();
 	auto viewport = getViewportFullscreen();
 	auto scissor = getScissorFullscreen();
 	auto viewportStateInfo = getViewportStateInfo(viewport, scissor);
 	auto rasterizationInfo = getRasterizationInfo();
 	auto multisampleInfo = getMultisampleInfo();
-	auto depthStencilInfo = getDepthStencilInfo();
+	auto depthStencilInfo = getDepthStencilInfoDepthEnabled();
 	auto colorBlendAttachments = std::vector {
-		getColorBlendAttachmentAdditive(),
+		getColorBlendAttachmentAdditive(), // TODO: should just replace the previous color
 	};
 	auto colorBlendInfo = getColorBlendInfo(colorBlendAttachments);
 	auto dynamicStates = std::vector<VkDynamicState> {
@@ -101,8 +101,8 @@ inline auto createDeferredGeometryPipelineRaii(VkDevice device, VkShaderModule s
 		device,
 		layout,
 		pipeline,
-		descriptorPool,
 		descriptorLayout,
+		descriptorPool,
 		descriptorSet,
 	};
 }

@@ -33,7 +33,7 @@ void PolygonRenderer::drawTriangle(
 
 void PolygonRenderer::drawCircle(glm::vec3 p, float r, glm::vec3 c)
 {
-	auto divisions = 32.f;
+	auto divisions = 128.f;
 	for (int i = 0; i < divisions; ++i) {
 		auto pi2 = 2.f * glm::pi<float>();
 		auto a = i / (divisions - 1.f) * pi2;
