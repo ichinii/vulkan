@@ -224,9 +224,13 @@ auto createRenderPass(VkDevice device)
 	colorAttachmentReference.attachment = 0;
 	colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	VkAttachmentReference depthAttachmentReference;
-	depthAttachmentReference.attachment = 1;
-	depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	VkAttachmentReference depthAttachmentReferenceOutput;
+	depthAttachmentReferenceOutput.attachment = 1;
+	depthAttachmentReferenceOutput.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentReference depthAttachmentReferenceInput;
+	depthAttachmentReferenceInput.attachment = 1;
+	depthAttachmentReferenceInput.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkAttachmentReference albedoAttachmentReferenceOutput;
 	albedoAttachmentReferenceOutput.attachment = 2;
@@ -244,16 +248,20 @@ auto createRenderPass(VkDevice device)
 	geometrySubpassDescription.colorAttachmentCount = 1;
 	geometrySubpassDescription.pColorAttachments = &albedoAttachmentReferenceOutput;
 	geometrySubpassDescription.pResolveAttachments = nullptr;
-	geometrySubpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
-	geometrySubpassDescription.preserveAttachmentCount = 1;
-	uint32_t preserve = 0;
-	geometrySubpassDescription.pPreserveAttachments = &preserve;
+	geometrySubpassDescription.pDepthStencilAttachment = &depthAttachmentReferenceOutput;
+	geometrySubpassDescription.preserveAttachmentCount = 0;
+	geometrySubpassDescription.pPreserveAttachments = nullptr;
+
+	VkAttachmentReference inputAttachments[2] {
+		albedoAttachmentReferenceInput,
+		depthAttachmentReferenceInput,
+	};
 
 	VkSubpassDescription shadingSubpassDescription;
 	shadingSubpassDescription.flags = 0;
 	shadingSubpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	shadingSubpassDescription.inputAttachmentCount = 1;
-	shadingSubpassDescription.pInputAttachments = &albedoAttachmentReferenceInput;
+	shadingSubpassDescription.inputAttachmentCount = 2;
+	shadingSubpassDescription.pInputAttachments = inputAttachments;
 	shadingSubpassDescription.colorAttachmentCount = 1;
 	shadingSubpassDescription.pColorAttachments = &colorAttachmentReference;
 	shadingSubpassDescription.pResolveAttachments = nullptr;
@@ -406,7 +414,7 @@ auto run()
 	while (!glfwWindowShouldClose(instance.window)) {
 		auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(cloc::now() - startTime) - sleepTime;
 
-		auto p = glm::perspective(glm::radians(60.f), static_cast<float>(windowSize.x) / windowSize.y, .1f, 100.f);
+		auto p = glm::perspective(glm::radians(60.f), static_cast<float>(windowSize.x) / windowSize.y, .1f, 10.f);
 		auto v = glm::lookAt(glm::vec3(glm::sin(glfwGetTime()), 1., 2.5), glm::vec3(0), glm::vec3(0, 1, 0));
 		// auto m = glm::translate(glm::mat4(1.f), glm::vec3(.2 + .2f * glm::sin(elapsedTime.count() / 2621.87f), 0, 0))
 		// 	* glm::scale(glm::mat4(1.f), glm::vec3(.8, .8, 1))
@@ -415,7 +423,7 @@ auto run()
 		uboUniform.update(mvp);
 
 		auto imageIndex = acquireNextImage(instance.device, instance.swapchain, semaphoreImageAvailable);
-		GraphicsPipeline::updateDescriptor(instance.device, lightingPipeline.descriptorSet, albedoImageViews[imageIndex]);
+		GraphicsPipeline::updateDescriptor(instance.device, lightingPipeline.descriptorSet, albedoImageViews[imageIndex], depthImageViews[imageIndex]);
 		fillCommandBuffer(instance.commandBuffer, frameBuffers[imageIndex], renderPass, geometryPipeline, lightingPipeline, {vertexBuffer}, verticesCount);
 		render(instance.swapchain, instance.queue, instance.commandBuffer, semaphoreImageAvailable, semaphoreRenderingDone, imageIndex);
 

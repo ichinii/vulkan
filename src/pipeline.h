@@ -52,12 +52,24 @@ inline auto createLightingDescriptorSetLayout(VkDevice device)
 	albedoInputAttachmentBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	albedoInputAttachmentBinding.pImmutableSamplers = nullptr; // Optional
 
+	VkDescriptorSetLayoutBinding depthInputAttachmentBinding;
+	depthInputAttachmentBinding.binding = 1;
+	depthInputAttachmentBinding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	depthInputAttachmentBinding.descriptorCount = 1;
+	depthInputAttachmentBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	depthInputAttachmentBinding.pImmutableSamplers = nullptr; // Optional
+
+	VkDescriptorSetLayoutBinding bindings[2] {
+		albedoInputAttachmentBinding,
+		depthInputAttachmentBinding,
+	};
+
 	VkDescriptorSetLayoutCreateInfo layoutInfo;
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layoutInfo.pNext = nullptr;
 	layoutInfo.flags = 0;
-	layoutInfo.bindingCount = 1;
-	layoutInfo.pBindings = &albedoInputAttachmentBinding;
+	layoutInfo.bindingCount = 2;
+	layoutInfo.pBindings = bindings;
 
 	VkDescriptorSetLayout descriptorSetLayout;
 	error << vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout);
@@ -105,17 +117,26 @@ inline auto createDescriptorPool(VkDevice device, const UniformInfos& uniformInf
 
 inline auto createLightingDescriptorPool(VkDevice device, std::size_t size)
 {
-	VkDescriptorPoolSize poolSize;
-	poolSize.descriptorCount = 1;
-	poolSize.type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	VkDescriptorPoolSize albedoPoolSize;
+	albedoPoolSize.descriptorCount = 1;
+	albedoPoolSize.type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+
+	VkDescriptorPoolSize depthPoolSize;
+	depthPoolSize.descriptorCount = 1;
+	depthPoolSize.type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+
+	VkDescriptorPoolSize poolSizes[2] {
+		albedoPoolSize,
+		depthPoolSize,
+	};
 
 	VkDescriptorPoolCreateInfo poolInfo;
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.flags = 0;
 	poolInfo.maxSets = size;
 	poolInfo.pNext = nullptr;
-	poolInfo.poolSizeCount = 1;
-	poolInfo.pPoolSizes = &poolSize;
+	poolInfo.poolSizeCount = 2;
+	poolInfo.pPoolSizes = poolSizes;
 
 	VkDescriptorPool pool;
 	error << vkCreateDescriptorPool(device, &poolInfo, nullptr, &pool);
@@ -187,72 +208,49 @@ inline auto updateDescriptor(
 inline auto updateDescriptor(
 		VkDevice device,
 		VkDescriptorSet& descriptorSet,
-		VkImageView view)
+		VkImageView albedoView,
+		VkImageView depthView)
 {
-	VkDescriptorImageInfo imageInfo;
-	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	imageInfo.imageView = view;
-	imageInfo.sampler = VK_NULL_HANDLE;
+	VkDescriptorImageInfo albedoImageInfo;
+	albedoImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	albedoImageInfo.imageView = albedoView;
+	albedoImageInfo.sampler = VK_NULL_HANDLE;
 
-	VkWriteDescriptorSet write;
-	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	write.pNext = nullptr;
-	write.dstSet = descriptorSet;
-	write.dstBinding = 0;
-	write.dstArrayElement = 0;
-	write.descriptorCount = 1;
-	write.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	write.pBufferInfo = nullptr;
-	write.pImageInfo = &imageInfo;
-	write.pTexelBufferView = nullptr;
+	VkDescriptorImageInfo depthImageInfo;
+	depthImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	depthImageInfo.imageView = depthView;
+	depthImageInfo.sampler = VK_NULL_HANDLE;
 
-	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
-}
+	VkWriteDescriptorSet albedoWrite;
+	albedoWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	albedoWrite.pNext = nullptr;
+	albedoWrite.dstSet = descriptorSet;
+	albedoWrite.dstBinding = 0;
+	albedoWrite.dstArrayElement = 0;
+	albedoWrite.descriptorCount = 1;
+	albedoWrite.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	albedoWrite.pBufferInfo = nullptr;
+	albedoWrite.pImageInfo = &albedoImageInfo;
+	albedoWrite.pTexelBufferView = nullptr;
 
-inline auto updateLightingDescriptor(
-		VkDevice device,
-		const Uniforms& uniforms,
-		VkDescriptorSet& descriptorSet)
-{
-	auto bufferInfos = std::vector<VkDescriptorBufferInfo>(uniforms.size());
-	auto imageInfos = std::vector<VkDescriptorImageInfo>(uniforms.size());
+	VkWriteDescriptorSet depthWrite;
+	depthWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	depthWrite.pNext = nullptr;
+	depthWrite.dstSet = descriptorSet;
+	depthWrite.dstBinding = 1;
+	depthWrite.dstArrayElement = 0;
+	depthWrite.descriptorCount = 1;
+	depthWrite.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	depthWrite.pBufferInfo = nullptr;
+	depthWrite.pImageInfo = &depthImageInfo;
+	depthWrite.pTexelBufferView = nullptr;
+	
+	VkWriteDescriptorSet writes[2] {
+		albedoWrite,
+		depthWrite,
+	};
 
-	for (std::size_t j = 0; j < uniforms.size(); ++j) {
-		auto& uniform = uniforms[j];
-
-		std::visit(overloaded{
-			[&] (const UniformBuffer& buffer) {
-				auto& bufferInfo = bufferInfos[j];
-				bufferInfo.buffer = buffer.buffer;
-				bufferInfo.offset = 0;
-				bufferInfo.range = buffer.size;
-			},
-			[&] (const Texture& texture) {
-				auto& imageInfo = imageInfos[j];
-				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo.imageView = texture.view;
-				imageInfo.sampler = texture.sampler;
-			},
-		}, uniform.buffer);
-	}
-
-	auto descriptorWrites = std::vector<VkWriteDescriptorSet>(uniforms.size());
-	for (std::size_t j = 0; j < uniforms.size(); ++j) {
-		auto& uniform = uniforms[j];
-		auto& write = descriptorWrites[j];
-		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		write.pNext = nullptr;
-		write.dstSet = descriptorSet;
-		write.dstBinding = uniform.binding;
-		write.dstArrayElement = 0;
-		write.descriptorCount = 1;
-		write.descriptorType = uniform.type;
-		write.pBufferInfo = &bufferInfos[j];
-		write.pImageInfo = &imageInfos[j];
-		write.pTexelBufferView = nullptr;
-	}
-
-	vkUpdateDescriptorSets(device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+	vkUpdateDescriptorSets(device, 2, writes, 0, nullptr);
 }
 
 inline auto getShaderStageVertInfo(const VkShaderModule shaderVert) {
