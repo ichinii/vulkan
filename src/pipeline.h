@@ -328,7 +328,7 @@ inline auto getDepthStencilInfo() {
 	depthStencilInfo.flags = 0;
 	depthStencilInfo.depthTestEnable = VK_TRUE;
 	depthStencilInfo.depthWriteEnable = VK_TRUE;
-	depthStencilInfo.depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL;
+	depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 	depthStencilInfo.depthBoundsTestEnable = VK_FALSE;
 	depthStencilInfo.stencilTestEnable = VK_FALSE;
 	depthStencilInfo.front = {};

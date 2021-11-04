@@ -11,6 +11,5 @@ layout(location = 0) out vec4 fragColor;
 
 void main()
 {
-	/* fragColor = color * (vec4(texture(tex, uv).rgb, 1) + vec4(texture(tex2, uv).rgb, 1)); */
-	fragColor = vec4(1, gl_FragCoord.z, 0, 1);
+	fragColor = color * (vec4(texture(tex, uv).rgb, 1) + vec4(texture(tex2, uv).rgb, 1));
 }

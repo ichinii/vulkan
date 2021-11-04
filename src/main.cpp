@@ -84,7 +84,7 @@ auto fillCommandBuffer(VkCommandBuffer commandBuffer, VkFramebuffer framebuffer,
 	renderPassBeginInfo.renderArea.extent = {windowSize.x, windowSize.y};
 
 	VkClearValue colorClearValue = {{{.01f, .06f, .1f, 1.f}}};
-	VkClearValue depthClearValue = {{{.0f, .0f}}};
+	VkClearValue depthClearValue = {{{1.0f, .0f}}};
 	VkClearValue clearValues[2] { colorClearValue, depthClearValue };
 	renderPassBeginInfo.clearValueCount = 2;
 	renderPassBeginInfo.pClearValues = clearValues;
@@ -298,11 +298,12 @@ auto run()
 	auto [semaphoreImageAvailable, semaphoreRenderingDone] = createSemaphores(instance.device);
 
 	auto renderer = PolygonRenderer();
-	renderer.drawCircle(glm::vec2(0), 1.f, glm::vec3(0.5));
+	auto z = 0.0f;
+	renderer.drawCircle(glm::vec3(0, 0, 0.1f), 1.f, glm::vec3(0.5));
 	renderer.drawTriangle(
-		glm::vec2(-1, -1), glm::vec3(.3), glm::vec2(0, 0),
-		glm::vec2(1, -1), glm::vec3(.3), glm::vec2(1, 0),
-		glm::vec2(1, 1), glm::vec3(.3), glm::vec2(1, 1));
+		glm::vec3(-1, -1, z), glm::vec3(.3), glm::vec2(0, 0),
+		glm::vec3(1, -1, z), glm::vec3(.3), glm::vec2(1, 0),
+		glm::vec3(1, 1, z), glm::vec3(.3), glm::vec2(1, 1));
 	auto vertices = renderer.flush();
 	assert(vertices.size() > 0);
 	auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, vertices);
