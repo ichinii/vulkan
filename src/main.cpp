@@ -83,9 +83,11 @@ auto fillCommandBuffer(VkCommandBuffer commandBuffer, VkFramebuffer framebuffer,
 	renderPassBeginInfo.renderArea.offset = {0, 0};
 	renderPassBeginInfo.renderArea.extent = {windowSize.x, windowSize.y};
 
-	VkClearValue clearValue = {{{.01f, .06f, .1f, 1.f}}};
-	renderPassBeginInfo.clearValueCount = 1;
-	renderPassBeginInfo.pClearValues = &clearValue;
+	VkClearValue colorClearValue = {{{.01f, .06f, .1f, 1.f}}};
+	VkClearValue depthClearValue = {{{.0f, .0f}}};
+	VkClearValue clearValues[2] { colorClearValue, depthClearValue };
+	renderPassBeginInfo.clearValueCount = 2;
+	renderPassBeginInfo.pClearValues = clearValues;
 
 	VkViewport viewport;
 	viewport.x = 0;
@@ -166,20 +168,37 @@ auto render(VkSwapchainKHR swapchain, VkQueue queue, VkCommandBuffer commandBuff
 
 auto createRenderPass(VkDevice device)
 {
-	VkAttachmentDescription attachmentDescription;
-	attachmentDescription.flags = 0;
-	attachmentDescription.format = image_format;
-	attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
-	attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	VkAttachmentDescription colorAttachmentDescription;
+	colorAttachmentDescription.flags = 0;
+	colorAttachmentDescription.format = image_format;
+	colorAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-	VkAttachmentReference attachmentReference;
-	attachmentReference.attachment = 0;
-	attachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	VkAttachmentDescription depthAttachmentDescription;
+	depthAttachmentDescription.flags = 0;
+	depthAttachmentDescription.format = VK_FORMAT_D32_SFLOAT;
+	depthAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	depthAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	depthAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	depthAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	depthAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentDescription attachmentDescriptions[2] { colorAttachmentDescription, depthAttachmentDescription };
+
+	VkAttachmentReference colorAttachmentReference;
+	colorAttachmentReference.attachment = 0;
+	colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentReference depthAttachmentReference;
+	depthAttachmentReference.attachment = 1;
+	depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
 
 	VkSubpassDescription subpassDescription;
 	subpassDescription.flags = 0;
@@ -187,8 +206,9 @@ auto createRenderPass(VkDevice device)
 	subpassDescription.inputAttachmentCount = 0;
 	subpassDescription.pInputAttachments = nullptr;
 	subpassDescription.colorAttachmentCount = 1;
-	subpassDescription.pColorAttachments = &attachmentReference;
+	subpassDescription.pColorAttachments = &colorAttachmentReference;
 	subpassDescription.pResolveAttachments = nullptr;
+	subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
 	subpassDescription.pDepthStencilAttachment = nullptr;
 	subpassDescription.preserveAttachmentCount = 0;
 	subpassDescription.pPreserveAttachments = nullptr;
@@ -206,8 +226,8 @@ auto createRenderPass(VkDevice device)
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.pNext = nullptr;
 	renderPassInfo.flags = 0;
-	renderPassInfo.attachmentCount = 1;
-	renderPassInfo.pAttachments = &attachmentDescription;
+	renderPassInfo.attachmentCount = 2;
+	renderPassInfo.pAttachments = attachmentDescriptions;
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpassDescription;
 	renderPassInfo.dependencyCount = 1;
@@ -218,17 +238,33 @@ auto createRenderPass(VkDevice device)
 	return renderPass;
 }
 
-auto createFrameBuffers(VkDevice device, const std::vector<VkImageView>& images, VkRenderPass renderPass)
+auto createDepthImages(VkDevice device, VkPhysicalDevice physicalDevice, VkCommandPool commandPool, VkQueue queue, const std::vector<VkImageView>& swapchainImages) {
+	auto memories = std::vector<VkDeviceMemory>();
+	auto images = std::vector<VkImage>();
+	auto imageViews = std::vector<VkImageView>();
+	for (auto i = 0u; i < swapchainImages.size(); ++i) {
+		auto [memory, image] = createDepthImage(device, physicalDevice, windowSize);
+		auto imageView = createDepthImageView(device, image);
+		memories.push_back(memory);
+		images.push_back(image);
+		imageViews.push_back(imageView);
+	}
+	return std::make_tuple(memories, images, imageViews);
+}
+
+auto createFrameBuffers(VkDevice device, const std::vector<VkImageView>& swapchainImageViews, const std::vector<VkImageView>& depthImageViews, VkRenderPass renderPass)
 {
-	auto framebuffers = std::vector<VkFramebuffer>(images.size());
-	for (std::size_t i = 0; i < images.size(); ++i) {
+	auto framebuffers = std::vector<VkFramebuffer>(swapchainImageViews.size());
+	for (std::size_t i = 0; i < swapchainImageViews.size(); ++i) {
 		VkFramebufferCreateInfo framebufferInfo;
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.pNext = nullptr;
 		framebufferInfo.flags = 0;
 		framebufferInfo.renderPass = renderPass;
-		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments = &images[i];
+
+		VkImageView views[2] = { swapchainImageViews[i], depthImageViews[i] };
+		framebufferInfo.attachmentCount = 2;
+		framebufferInfo.pAttachments = views;
 		framebufferInfo.width = windowSize.x;
 		framebufferInfo.height = windowSize.y;
 		framebufferInfo.layers = 1;
@@ -246,7 +282,8 @@ auto run()
 
 	auto instance = Instance();
 	auto renderPass = createRenderPass(instance.device);
-	auto frameBuffers = createFrameBuffers(instance.device, instance.imageViews, renderPass);
+	auto [depthMemories, depthImages, depthImageViews] = createDepthImages(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, instance.imageViews);
+	auto frameBuffers = createFrameBuffers(instance.device, instance.imageViews, depthImageViews, renderPass);
 
 	auto shaderVert = createShader(instance.device, "res/shader.vert.spv");
 	auto shaderFrag = createShader(instance.device, "res/shader.frag.spv");
@@ -313,6 +350,12 @@ auto run()
 	vkDestroySemaphore(instance.device, semaphoreRenderingDone, nullptr);
 	vkDestroySemaphore(instance.device, semaphoreImageAvailable, nullptr);
 
+	for (const auto& imageView : depthImageViews)
+		vkDestroyImageView(instance.device, imageView, nullptr);
+	for (const auto& image : depthImages)
+		vkDestroyImage(instance.device, image, nullptr);
+	for (const auto& memory : depthMemories)
+		vkFreeMemory(instance.device, memory, nullptr);
 	for (const auto& framebuffer : frameBuffers)
 		vkDestroyFramebuffer(instance.device, framebuffer, nullptr);
 	vkDestroyRenderPass(instance.device, renderPass, nullptr);
