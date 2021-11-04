@@ -201,26 +201,60 @@ auto createRenderPass(VkDevice device)
 	depthAttachmentReference.attachment = 1;
 	depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-	VkSubpassDescription subpassDescription;
-	subpassDescription.flags = 0;
-	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpassDescription.inputAttachmentCount = 0;
-	subpassDescription.pInputAttachments = nullptr;
-	subpassDescription.colorAttachmentCount = 1;
-	subpassDescription.pColorAttachments = &colorAttachmentReference;
-	subpassDescription.pResolveAttachments = nullptr;
-	subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
-	subpassDescription.preserveAttachmentCount = 0;
-	subpassDescription.pPreserveAttachments = nullptr;
+	VkSubpassDescription geometrySubpassDescription;
+	geometrySubpassDescription.flags = 0;
+	geometrySubpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	geometrySubpassDescription.inputAttachmentCount = 0;
+	geometrySubpassDescription.pInputAttachments = nullptr;
+	geometrySubpassDescription.colorAttachmentCount = 1;
+	geometrySubpassDescription.pColorAttachments = &colorAttachmentReference;
+	geometrySubpassDescription.pResolveAttachments = nullptr;
+	geometrySubpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
+	geometrySubpassDescription.preserveAttachmentCount = 0;
+	geometrySubpassDescription.pPreserveAttachments = nullptr;
 
-	VkSubpassDependency subpassDependency;
-	subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	subpassDependency.dstSubpass = 0;
-	subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	subpassDependency.srcAccessMask = 0;
-	subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	subpassDependency.dependencyFlags = 0;
+	VkSubpassDescription shadingSubpassDescription;
+	shadingSubpassDescription.flags = 0;
+	shadingSubpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	shadingSubpassDescription.inputAttachmentCount = 0;
+	shadingSubpassDescription.pInputAttachments = nullptr;
+	shadingSubpassDescription.colorAttachmentCount = 1;
+	shadingSubpassDescription.pColorAttachments = &colorAttachmentReference;
+	shadingSubpassDescription.pResolveAttachments = nullptr;
+	shadingSubpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
+	shadingSubpassDescription.preserveAttachmentCount = 0;
+	shadingSubpassDescription.pPreserveAttachments = nullptr;
+
+	VkSubpassDescription subpassDescriptions[2] {
+		geometrySubpassDescription,
+		shadingSubpassDescription,
+	};
+
+	VkSubpassDependency subpassDependencies[3];
+
+	subpassDependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+	subpassDependencies[0].dstSubpass = 0;
+	subpassDependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	subpassDependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+	subpassDependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	subpassDependencies[0].dependencyFlags = 0;
+
+	subpassDependencies[1].srcSubpass = 0;
+	subpassDependencies[1].dstSubpass = 1;
+	subpassDependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependencies[1].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	subpassDependencies[1].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	subpassDependencies[1].dependencyFlags = 0;
+
+	subpassDependencies[2].srcSubpass = 1;
+	subpassDependencies[2].dstSubpass = VK_SUBPASS_EXTERNAL;
+	subpassDependencies[2].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependencies[2].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	subpassDependencies[2].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	subpassDependencies[2].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+	subpassDependencies[2].dependencyFlags = 0;
 
 	VkRenderPassCreateInfo renderPassInfo;
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -228,10 +262,10 @@ auto createRenderPass(VkDevice device)
 	renderPassInfo.flags = 0;
 	renderPassInfo.attachmentCount = 2;
 	renderPassInfo.pAttachments = attachmentDescriptions;
-	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpassDescription;
-	renderPassInfo.dependencyCount = 1;
-	renderPassInfo.pDependencies = &subpassDependency;
+	renderPassInfo.subpassCount = 2;
+	renderPassInfo.pSubpasses = subpassDescriptions;
+	renderPassInfo.dependencyCount = 3;
+	renderPassInfo.pDependencies = subpassDependencies;
 
 	VkRenderPass renderPass;
 	error << vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass);
