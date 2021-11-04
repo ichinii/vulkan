@@ -7,6 +7,7 @@
 #include <thread>
 #include <algorithm>
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -298,8 +299,8 @@ auto run()
 	auto [semaphoreImageAvailable, semaphoreRenderingDone] = createSemaphores(instance.device);
 
 	auto renderer = PolygonRenderer();
-	auto z = 0.0f;
-	renderer.drawCircle(glm::vec3(0, 0, 0.1f), 1.f, glm::vec3(0.5));
+	auto z = 0.2f;
+	renderer.drawCircle(glm::vec3(0, 0, 0), 1.f, glm::vec3(0.5));
 	renderer.drawTriangle(
 		glm::vec3(-1, -1, z), glm::vec3(.3), glm::vec2(0, 0),
 		glm::vec3(1, -1, z), glm::vec3(.3), glm::vec2(1, 0),
@@ -314,14 +315,13 @@ auto run()
 	while (!glfwWindowShouldClose(instance.window)) {
 		auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(cloc::now() - startTime) - sleepTime;
 
-		auto ubo = DeferredGeometryPipeline::Ubo();
-		ubo.mvp = glm::mat4(1.f);
-		ubo.mvp = ubo.mvp * glm::perspective(70.f, static_cast<float>(windowSize.x) / windowSize.y, .1f, 100.f);
-		ubo.mvp = ubo.mvp * glm::lookAt(glm::vec3(0, 0, 2.), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-		ubo.mvp = glm::translate(ubo.mvp, glm::vec3(.2 + .2f * glm::sin(elapsedTime.count() / 2621.87f), 0, 0));
-		ubo.mvp = glm::scale(ubo.mvp, glm::vec3(.8, .8, 1));
-		ubo.mvp = glm::rotate(ubo.mvp, .1f * glm::sin(elapsedTime.count() / 1000.f), glm::vec3(0, 0, 1));
-		uboUniform.update(ubo);
+		auto p = glm::perspective(glm::radians(60.f), static_cast<float>(windowSize.x) / windowSize.y, .1f, 100.f);
+		auto v = glm::lookAt(glm::vec3(glm::sin(glfwGetTime()), 1., 2.5), glm::vec3(0), glm::vec3(0, 1, 0));
+		// auto m = glm::translate(glm::mat4(1.f), glm::vec3(.2 + .2f * glm::sin(elapsedTime.count() / 2621.87f), 0, 0))
+		// 	* glm::scale(glm::mat4(1.f), glm::vec3(.8, .8, 1))
+		// 	* glm::rotate(glm::mat4(1.f), .1f * glm::sin(elapsedTime.count() / 1000.f), glm::vec3(0, 0, 1));
+		auto mvp = p * v;
+		uboUniform.update(mvp);
 
 		auto imageIndex = acquireNextImage(instance.device, instance.swapchain, semaphoreImageAvailable);
 		fillCommandBuffer(instance.commandBuffer, frameBuffers[imageIndex], renderPass, pipeline.pipeline, pipeline.layout, {vertexBuffer}, pipeline.descriptorSet, verticesCount);

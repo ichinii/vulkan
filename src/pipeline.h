@@ -254,8 +254,8 @@ inline auto getRasterizationInfo() {
 	rasterizationInfo.depthClampEnable = VK_FALSE;
 	rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
 	rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
-	rasterizationInfo.cullMode = VK_CULL_MODE_NONE; // TODO: decide cull mode
-	rasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizationInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterizationInfo.depthBiasEnable = VK_FALSE;
 	rasterizationInfo.depthBiasConstantFactor = 0.f;
 	rasterizationInfo.depthBiasClamp = 0.f;
