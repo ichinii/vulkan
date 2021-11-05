@@ -94,7 +94,7 @@ auto fillCommandBuffer(
 
 	VkClearValue colorClearValue = {{{0, 0, 0, 0}}};
 	VkClearValue depthClearValue = {{{1.0f, .0f}}};
-	VkClearValue albedoClearValue = {{{.01f, .06f, .1f, 1.f}}};
+	VkClearValue albedoClearValue = {{{.01f, .06f, .1f, 0.f}}};
 	VkClearValue clearValues[3] { colorClearValue, depthClearValue, albedoClearValue };
 	renderPassBeginInfo.clearValueCount = 3;
 	renderPassBeginInfo.pClearValues = clearValues;
@@ -384,9 +384,9 @@ auto run()
 	vkDestroyShaderModule(instance.device, geometryShaderVert, nullptr);
 	vkDestroyShaderModule(instance.device, geometryShaderFrag, nullptr);
 
-	auto uniforms = DeferredGeometryPipeline::createUniforms(instance);
-	auto& uboUniform = std::get<UniformBuffer>(uniforms[0].buffer);
-	GraphicsPipeline::updateDescriptor(instance.device, geometryPipeline.descriptorSet, uniforms);
+	auto geometryUniforms = DeferredGeometryPipeline::createUniforms(instance);
+	auto& geometryUboUniform = std::get<UniformBuffer>(geometryUniforms[0].buffer);
+	GraphicsPipeline::updateDescriptor(instance.device, geometryPipeline.descriptorSet, geometryUniforms);
 
 	auto lightingShaderVert = createShader(instance.device, "res/deferred_lighting.vert.spv");
 	auto lightingShaderFrag = createShader(instance.device, "res/deferred_lighting.frag.spv");
@@ -394,12 +394,16 @@ auto run()
 	vkDestroyShaderModule(instance.device, lightingShaderVert, nullptr);
 	vkDestroyShaderModule(instance.device, lightingShaderFrag, nullptr);
 
+	auto lightingUniforms = DeferredLightingPipeline::createUniforms(instance);
+	auto& lightingUboUniform = std::get<UniformBuffer>(lightingUniforms[0].buffer);
+
 	// auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(device, physicalDevice, commandPool, queue);
 	auto [semaphoreImageAvailable, semaphoreRenderingDone] = createSemaphores(instance.device);
 
 	auto renderer = PolygonRenderer();
-	auto z = 0.2f;
+	auto z = 0.25f;
 	renderer.drawCircle(glm::vec3(0, 0, 0), 1.f, glm::vec3(0.5));
+	renderer.drawCircle(glm::vec3(0, 0, .5), .5f, glm::vec3(0.5));
 	renderer.drawTriangle(
 		glm::vec3(-1, -1, z), glm::vec3(.3), glm::vec2(0, 0),
 		glm::vec3(1, -1, z), glm::vec3(.3), glm::vec2(1, 0),
@@ -415,15 +419,25 @@ auto run()
 		auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(cloc::now() - startTime) - sleepTime;
 
 		auto p = glm::perspective(glm::radians(60.f), static_cast<float>(windowSize.x) / windowSize.y, .1f, 10.f);
-		auto v = glm::lookAt(glm::vec3(glm::sin(glfwGetTime()), 1., 2.5), glm::vec3(0), glm::vec3(0, 1, 0));
-		// auto m = glm::translate(glm::mat4(1.f), glm::vec3(.2 + .2f * glm::sin(elapsedTime.count() / 2621.87f), 0, 0))
+		// auto v = glm::lookAt(glm::vec3(glm::sin(glfwGetTime()), 1., 2.5), glm::vec3(0), glm::vec3(0, 1, 0));
+		// auto v = glm::lookAt(glm::vec3(0, 0, 2. + glm::sin(glfwGetTime())), glm::vec3(0), glm::vec3(0, 1, 0));
+		auto v = glm::lookAt(glm::vec3(glm::sin(glfwGetTime()), 0, 3), glm::vec3(0.001, 0, 0), glm::vec3(0, 1, 0));
+		auto m = glm::mat4(1.f);
+		m = glm::translate(m, glm::vec3(0, glm::sin(glfwGetTime() * .71), 0));
+		// m = glm::translate(m, glm::vec3(0, 0, glm::sin(glfwGetTime() * 1.732)));
 		// 	* glm::scale(glm::mat4(1.f), glm::vec3(.8, .8, 1))
 		// 	* glm::rotate(glm::mat4(1.f), .1f * glm::sin(elapsedTime.count() / 1000.f), glm::vec3(0, 0, 1));
-		auto mvp = p * v;
-		uboUniform.update(mvp);
+		auto mvp = p * v * m;
+		geometryUboUniform.update(mvp);
+
+		DeferredLightingPipeline::Ubo lightingUbo {
+			glm::inverse(p * v),
+			windowSize,
+		};
+		lightingUboUniform.update(lightingUbo);
 
 		auto imageIndex = acquireNextImage(instance.device, instance.swapchain, semaphoreImageAvailable);
-		GraphicsPipeline::updateDescriptor(instance.device, lightingPipeline.descriptorSet, albedoImageViews[imageIndex], depthImageViews[imageIndex]);
+		GraphicsPipeline::updateDescriptor(instance.device, lightingPipeline.descriptorSet, lightingUniforms, albedoImageViews[imageIndex], depthImageViews[imageIndex]);
 		fillCommandBuffer(instance.commandBuffer, frameBuffers[imageIndex], renderPass, geometryPipeline, lightingPipeline, {vertexBuffer}, verticesCount);
 		render(instance.swapchain, instance.queue, instance.commandBuffer, semaphoreImageAvailable, semaphoreRenderingDone, imageIndex);
 

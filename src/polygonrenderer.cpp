@@ -40,8 +40,8 @@ void PolygonRenderer::drawCircle(glm::vec3 p, float r, glm::vec3 c)
 		auto a2 = (i+1) / (divisions - 1.f) * pi2;
 		auto dir = glm::vec2(glm::cos(a), glm::sin(a));
 		auto dir2 = glm::vec2(glm::cos(a2), glm::sin(a2));
-		auto pos = glm::vec3(r * dir, p.z);
-		auto pos2 = glm::vec3(r * dir2, p.z);
+		auto pos = glm::vec3(r * dir, 0);
+		auto pos2 = glm::vec3(r * dir2, 0);
 		m_vertices.push_back(DeferredGeometryPipeline::Vertex{p, c * .5f, {.5, .5}});
 		m_vertices.push_back(DeferredGeometryPipeline::Vertex{p + pos, c, dir * .5f + .5f});
 		m_vertices.push_back(DeferredGeometryPipeline::Vertex{p + pos2, c, dir2 * .5f + .5f});

@@ -26,7 +26,7 @@ inline auto getUniformBindings(const UniformInfos& uniformInfos) {
 	return bindings;
 }
 
-inline auto createDescriptorSetLayout(VkDevice device, const UniformInfos& uniformInfos)
+inline auto createGeometryDescriptorSetLayout(VkDevice device, const UniformInfos& uniformInfos)
 {
 	auto bindings = getUniformBindings(uniformInfos);
 
@@ -43,7 +43,7 @@ inline auto createDescriptorSetLayout(VkDevice device, const UniformInfos& unifo
 	return descriptorSetLayout;
 }
 
-inline auto createLightingDescriptorSetLayout(VkDevice device)
+inline auto createLightingDescriptorSetLayout(VkDevice device, const UniformInfos& uniformInfos)
 {
 	VkDescriptorSetLayoutBinding albedoInputAttachmentBinding;
 	albedoInputAttachmentBinding.binding = 0;
@@ -59,17 +59,16 @@ inline auto createLightingDescriptorSetLayout(VkDevice device)
 	depthInputAttachmentBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	depthInputAttachmentBinding.pImmutableSamplers = nullptr; // Optional
 
-	VkDescriptorSetLayoutBinding bindings[2] {
-		albedoInputAttachmentBinding,
-		depthInputAttachmentBinding,
-	};
+	auto bindings = getUniformBindings(uniformInfos);
+	bindings.push_back(albedoInputAttachmentBinding);
+	bindings.push_back(depthInputAttachmentBinding);
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo;
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layoutInfo.pNext = nullptr;
 	layoutInfo.flags = 0;
-	layoutInfo.bindingCount = 2;
-	layoutInfo.pBindings = bindings;
+	layoutInfo.bindingCount = bindings.size();
+	layoutInfo.pBindings = bindings.data();
 
 	VkDescriptorSetLayout descriptorSetLayout;
 	error << vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout);
@@ -93,18 +92,18 @@ inline auto createPipelineLayout(VkDevice device, const VkDescriptorSetLayout& d
 	return pipelineLayout;
 }
 
-inline auto createDescriptorPool(VkDevice device, const UniformInfos& uniformInfos, std::size_t size)
+inline auto createGeometryDescriptorPool(VkDevice device, const UniformInfos& uniformInfos)
 {
 	auto poolSizes = std::vector<VkDescriptorPoolSize>(uniformInfos.size());
 	for (std::size_t i = 0; i < uniformInfos.size(); ++i) {
 		auto& uniform = uniformInfos[i];
-		poolSizes[i] = {uniform.type, static_cast<uint32_t>(size)};
+		poolSizes[i] = {uniform.type, 1};
 	}
 
 	VkDescriptorPoolCreateInfo poolInfo;
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.flags = 0;
-	poolInfo.maxSets = size;
+	poolInfo.maxSets = 1;
 	poolInfo.pNext = nullptr;
 	poolInfo.poolSizeCount = poolSizes.size();
 	poolInfo.pPoolSizes = poolSizes.data();
@@ -115,28 +114,31 @@ inline auto createDescriptorPool(VkDevice device, const UniformInfos& uniformInf
 	return pool;
 }
 
-inline auto createLightingDescriptorPool(VkDevice device, std::size_t size)
+inline auto createLightingDescriptorPool(VkDevice device, const UniformInfos& uniformInfos)
 {
+	auto poolSizes = std::vector<VkDescriptorPoolSize>(uniformInfos.size());
+	for (std::size_t i = 0; i < uniformInfos.size(); ++i) {
+		auto& uniform = uniformInfos[i];
+		poolSizes[i] = {uniform.type, 1};
+	}
+
 	VkDescriptorPoolSize albedoPoolSize;
 	albedoPoolSize.descriptorCount = 1;
 	albedoPoolSize.type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	poolSizes.push_back(albedoPoolSize);
 
 	VkDescriptorPoolSize depthPoolSize;
 	depthPoolSize.descriptorCount = 1;
 	depthPoolSize.type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-
-	VkDescriptorPoolSize poolSizes[2] {
-		albedoPoolSize,
-		depthPoolSize,
-	};
+	poolSizes.push_back(depthPoolSize);
 
 	VkDescriptorPoolCreateInfo poolInfo;
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.flags = 0;
-	poolInfo.maxSets = size;
+	poolInfo.maxSets = 1;
 	poolInfo.pNext = nullptr;
-	poolInfo.poolSizeCount = 2;
-	poolInfo.pPoolSizes = poolSizes;
+	poolInfo.poolSizeCount = poolSizes.size();
+	poolInfo.pPoolSizes = poolSizes.data();
 
 	VkDescriptorPool pool;
 	error << vkCreateDescriptorPool(device, &poolInfo, nullptr, &pool);
@@ -208,6 +210,7 @@ inline auto updateDescriptor(
 inline auto updateDescriptor(
 		VkDevice device,
 		VkDescriptorSet& descriptorSet,
+		const Uniforms& uniforms,
 		VkImageView albedoView,
 		VkImageView depthView)
 {
@@ -220,6 +223,28 @@ inline auto updateDescriptor(
 	depthImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	depthImageInfo.imageView = depthView;
 	depthImageInfo.sampler = VK_NULL_HANDLE;
+
+	auto bufferInfos = std::vector<VkDescriptorBufferInfo>(uniforms.size());
+	auto imageInfos = std::vector<VkDescriptorImageInfo>(uniforms.size());
+
+	for (std::size_t j = 0; j < uniforms.size(); ++j) {
+		auto& uniform = uniforms[j];
+
+		std::visit(overloaded{
+			[&] (const UniformBuffer& buffer) {
+				auto& bufferInfo = bufferInfos[j];
+				bufferInfo.buffer = buffer.buffer;
+				bufferInfo.offset = 0;
+				bufferInfo.range = buffer.size;
+			},
+			[&] (const Texture& texture) {
+				auto& imageInfo = imageInfos[j];
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo.imageView = texture.view;
+				imageInfo.sampler = texture.sampler;
+			},
+		}, uniform.buffer);
+	}
 
 	VkWriteDescriptorSet albedoWrite;
 	albedoWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -244,13 +269,26 @@ inline auto updateDescriptor(
 	depthWrite.pBufferInfo = nullptr;
 	depthWrite.pImageInfo = &depthImageInfo;
 	depthWrite.pTexelBufferView = nullptr;
-	
-	VkWriteDescriptorSet writes[2] {
-		albedoWrite,
-		depthWrite,
-	};
 
-	vkUpdateDescriptorSets(device, 2, writes, 0, nullptr);
+	auto writes = std::vector<VkWriteDescriptorSet>(uniforms.size());
+	for (std::size_t j = 0; j < uniforms.size(); ++j) {
+		auto& uniform = uniforms[j];
+		auto& write = writes[j];
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.pNext = nullptr;
+		write.dstSet = descriptorSet;
+		write.dstBinding = uniform.binding;
+		write.dstArrayElement = 0;
+		write.descriptorCount = 1;
+		write.descriptorType = uniform.type;
+		write.pBufferInfo = &bufferInfos[j];
+		write.pImageInfo = &imageInfos[j];
+		write.pTexelBufferView = nullptr;
+	}
+	writes.push_back(albedoWrite);
+	writes.push_back(depthWrite);
+
+	vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
 }
 
 inline auto getShaderStageVertInfo(const VkShaderModule shaderVert) {
@@ -397,6 +435,23 @@ inline auto getMultisampleInfo() {
 	multisampleInfo.alphaToCoverageEnable = VK_FALSE;
 	multisampleInfo.alphaToOneEnable = VK_FALSE;
 	return multisampleInfo;
+}
+
+inline auto getColorBlendAttachmentDisabled() {
+	VkPipelineColorBlendAttachmentState colorBlendAttachment;
+	colorBlendAttachment.blendEnable = VK_FALSE;
+	colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+	colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+	colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+	colorBlendAttachment.colorWriteMask =
+		VK_COLOR_COMPONENT_R_BIT |
+		VK_COLOR_COMPONENT_G_BIT |
+		VK_COLOR_COMPONENT_B_BIT |
+		VK_COLOR_COMPONENT_A_BIT;
+	return colorBlendAttachment;
 }
 
 inline auto getColorBlendAttachmentAdditive() {

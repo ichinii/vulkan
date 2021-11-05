@@ -60,7 +60,7 @@ inline auto createDeferredGeometryPipeline(VkDevice device, VkRenderPass renderP
 	auto multisampleInfo = getMultisampleInfo();
 	auto depthStencilInfo = getDepthStencilInfoDepthEnabled();
 	auto colorBlendAttachments = std::vector {
-		getColorBlendAttachmentAdditive(), // TODO: should just replace the previous color
+		getColorBlendAttachmentDisabled(),
 	};
 	auto colorBlendInfo = getColorBlendInfo(colorBlendAttachments);
 	auto dynamicStates = std::vector<VkDynamicState> {
@@ -92,10 +92,10 @@ inline auto createDeferredGeometryPipeline(VkDevice device, VkRenderPass renderP
 inline auto createDeferredGeometryPipelineRaii(VkDevice device, VkShaderModule shaderVert, VkShaderModule shaderFrag, VkRenderPass renderPass, std::size_t subpassIndex) {
 	auto uniformInfos = getUniformInfos();
 	auto attributeInfos = getAttributeInfos();
-	auto descriptorLayout = createDescriptorSetLayout(device, uniformInfos);
+	auto descriptorLayout = createGeometryDescriptorSetLayout(device, uniformInfos);
 	auto layout = createPipelineLayout(device, descriptorLayout);
 	auto pipeline = createDeferredGeometryPipeline(device, renderPass, subpassIndex, layout, shaderVert, shaderFrag, attributeInfos);
-	auto descriptorPool = createDescriptorPool(device, uniformInfos, 1);
+	auto descriptorPool = createGeometryDescriptorPool(device, uniformInfos);
 	auto descriptorSet = createDescriptorSets(device, descriptorLayout, descriptorPool);
 	return GraphicsPipelineRaii {
 		device,

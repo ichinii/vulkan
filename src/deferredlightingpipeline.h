@@ -8,6 +8,17 @@ namespace DeferredLightingPipeline {
 
 using namespace GraphicsPipeline;
 
+struct Ubo {
+	glm::mat4 p = glm::mat4(1.f);
+	glm::vec2 windowSize;
+};
+
+inline auto getUniformInfos() {
+	return UniformInfos {
+		UniformInfo {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT},
+	};
+}
+
 inline auto createDeferredLightingPipeline(VkDevice device, VkRenderPass renderPass, std::size_t subpassIndex, VkPipelineLayout pipelineLayout, VkShaderModule shaderVert, VkShaderModule shaderFrag)
 {
 	auto shaderStageInfos = std::vector {
@@ -24,7 +35,7 @@ inline auto createDeferredLightingPipeline(VkDevice device, VkRenderPass renderP
 	auto multisampleInfo = getMultisampleInfo();
 	auto depthStencilInfo = getDepthStencilInfoDisabled();
 	auto colorBlendAttachments = std::vector {
-		getColorBlendAttachmentAdditive(), // TODO: no point to do any blending here
+		getColorBlendAttachmentDisabled(),
 	};
 	auto colorBlendInfo = getColorBlendInfo(colorBlendAttachments);
 	auto dynamicStates = std::vector<VkDynamicState> {
@@ -54,10 +65,11 @@ inline auto createDeferredLightingPipeline(VkDevice device, VkRenderPass renderP
 }
 
 inline auto createDeferredLightingPipelineRaii(VkDevice device, VkShaderModule shaderVert, VkShaderModule shaderFrag, VkRenderPass renderPass, std::size_t subpassIndex) {
-	auto descriptorSetLayout = createLightingDescriptorSetLayout(device);
+	auto uniformInfos = getUniformInfos();
+	auto descriptorSetLayout = createLightingDescriptorSetLayout(device, uniformInfos);
 	auto layout = createPipelineLayout(device, descriptorSetLayout);
 	auto pipeline = createDeferredLightingPipeline(device, renderPass, subpassIndex, layout, shaderVert, shaderFrag);
-	auto descriptorPool = createLightingDescriptorPool(device, 1);
+	auto descriptorPool = createLightingDescriptorPool(device, uniformInfos);
 	auto descriptorSet = createDescriptorSets(device, descriptorSetLayout, descriptorPool);
 	return GraphicsPipelineRaii {
 		device,
@@ -67,6 +79,13 @@ inline auto createDeferredLightingPipelineRaii(VkDevice device, VkShaderModule s
 		descriptorPool,
 		descriptorSet,
 	};
+}
+
+inline auto createUniforms(const Instance& instance) {
+	auto uniforms = Uniforms();
+	uniforms.push_back(createUniform(2, VK_SHADER_STAGE_FRAGMENT_BIT, UniformBuffer::fromStruct<Ubo>(instance)));
+
+	return uniforms;
 }
 
 } // namespace DeferredLightingPipeline

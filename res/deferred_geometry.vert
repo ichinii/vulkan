@@ -13,17 +13,17 @@ out gl_PerVertex {
 	vec4 gl_Position;
 };
 
-layout(location = 0) out vec3 pos;
-layout(location = 1) out vec4 color;
+layout(location = 0) out float w;
+layout(location = 1) out vec3 color;
 layout(location = 2) out vec2 uv;
 
 void main()
 {
-	vec4 pos4 = ubo.mvp * vec4(vertex_position, 1);
-	pos4.y = -pos4.y;
-	pos = pos4.xyz;
-	gl_Position = pos4;
+	vec4 pos = ubo.mvp * vec4(vertex_position, 1);
+	pos.y = -pos.y;
+	gl_Position = pos;
+	w = pos.w;
 
-	color = vec4(vertex_color, 1);
+	color = vertex_color;
 	uv = vertex_uv;
 }

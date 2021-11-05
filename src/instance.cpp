@@ -209,7 +209,7 @@ auto createSwapchain(VkDevice device, VkSurfaceKHR surface)
 	swapchainInfo.pQueueFamilyIndices = nullptr;
 	swapchainInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 	swapchainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-	swapchainInfo.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR; // TODO: dependent
+	swapchainInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR; // TODO: dependent
 	swapchainInfo.clipped = VK_TRUE;
 	swapchainInfo.oldSwapchain = VK_NULL_HANDLE;
 
