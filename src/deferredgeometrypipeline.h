@@ -61,6 +61,7 @@ inline auto createDeferredGeometryPipeline(VkDevice device, VkRenderPass renderP
 	auto depthStencilInfo = getDepthStencilInfoDepthEnabled();
 	auto colorBlendAttachments = std::vector {
 		getColorBlendAttachmentDisabled(),
+		getColorBlendAttachmentDisabled(),
 	};
 	auto colorBlendInfo = getColorBlendInfo(colorBlendAttachments);
 	auto dynamicStates = std::vector<VkDynamicState> {

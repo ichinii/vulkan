@@ -124,6 +124,43 @@ inline auto createAlbedoImage(VkDevice device, VkPhysicalDevice physicalDevice, 
 	return std::make_tuple(textureMemory, textureImage);
 }
 
+inline auto createNormalImage(VkDevice device, VkPhysicalDevice physicalDevice, glm::uvec2 size) {
+	VkImage textureImage;
+	VkDeviceMemory textureMemory;
+
+	VkImageCreateInfo imageInfo{};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.extent.width = static_cast<uint32_t>(size.x);
+	imageInfo.extent.height = static_cast<uint32_t>(size.y);
+	imageInfo.extent.depth = 1;
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = 1;
+	imageInfo.format = VK_FORMAT_R8G8B8A8_SNORM;
+	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	imageInfo.usage = VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.flags = 0; // Optional
+
+	error << vkCreateImage(device, &imageInfo, nullptr, &textureImage);
+
+	VkMemoryRequirements requirements;
+	vkGetImageMemoryRequirements(device, textureImage, &requirements);
+
+	VkMemoryAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = requirements.size;
+	allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, requirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+	error << vkAllocateMemory(device, &allocInfo, nullptr, &textureMemory);
+
+	vkBindImageMemory(device, textureImage, textureMemory, 0);
+
+	return std::make_tuple(textureMemory, textureImage);
+}
+
 inline auto createColorImageView(VkDevice device, VkImage image) {
 	VkImageViewCreateInfo viewInfo{};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -166,6 +203,24 @@ inline auto createAlbedoImageView(VkDevice device, VkImage image) {
 	viewInfo.image = image;
 	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	viewInfo.subresourceRange.baseMipLevel = 0;
+	viewInfo.subresourceRange.levelCount = 1;
+	viewInfo.subresourceRange.baseArrayLayer = 0;
+	viewInfo.subresourceRange.layerCount = 1;
+
+	VkImageView textureView;
+	error << vkCreateImageView(device, &viewInfo, nullptr, &textureView);
+
+	return textureView;
+}
+
+inline auto createNormalImageView(VkDevice device, VkImage image) {
+	VkImageViewCreateInfo viewInfo{};
+	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewInfo.image = image;
+	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	viewInfo.format = VK_FORMAT_R8G8B8A8_SNORM;
 	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	viewInfo.subresourceRange.baseMipLevel = 0;
 	viewInfo.subresourceRange.levelCount = 1;

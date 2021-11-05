@@ -3,8 +3,9 @@
 
 layout (input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput input_albedo;
 layout (input_attachment_index = 1, set = 0, binding = 1) uniform subpassInput input_depth;
+layout (input_attachment_index = 2, set = 0, binding = 2) uniform subpassInput input_normal;
 
-layout(binding = 2) uniform UBO {
+layout(binding = 3) uniform UBO {
 	mat4 p;
 	vec2 windowSize;
 } ubo;
@@ -19,11 +20,12 @@ void main()
 	vec3 albedo = albedo_.rgb;
 	float w = albedo_.w;
 	float depth = subpassLoad(input_depth).r;
+	vec3 normal = subpassLoad(input_normal).rgb;
 
 	vec2 screen_coord = gl_FragCoord.xy / ubo.windowSize * 2. - 1.;
 	screen_coord.y = -screen_coord.y;
 	vec4 pos = vec4(screen_coord, depth, w);
 	pos.xyz *= pos.w;
 	pos = ubo.p * pos;
-	fragColor = vec4(sign(pos.xy), 0, 1);
+	fragColor = vec4(normal, 1);
 }

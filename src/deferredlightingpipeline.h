@@ -15,7 +15,7 @@ struct Ubo {
 
 inline auto getUniformInfos() {
 	return UniformInfos {
-		UniformInfo {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT},
+		UniformInfo {3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT},
 	};
 }
 
@@ -83,7 +83,7 @@ inline auto createDeferredLightingPipelineRaii(VkDevice device, VkShaderModule s
 
 inline auto createUniforms(const Instance& instance) {
 	auto uniforms = Uniforms();
-	uniforms.push_back(createUniform(2, VK_SHADER_STAGE_FRAGMENT_BIT, UniformBuffer::fromStruct<Ubo>(instance)));
+	uniforms.push_back(createUniform(3, VK_SHADER_STAGE_FRAGMENT_BIT, UniformBuffer::fromStruct<Ubo>(instance)));
 
 	return uniforms;
 }

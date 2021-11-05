@@ -95,8 +95,14 @@ auto fillCommandBuffer(
 	VkClearValue colorClearValue = {{{0, 0, 0, 0}}};
 	VkClearValue depthClearValue = {{{1.0f, .0f}}};
 	VkClearValue albedoClearValue = {{{.01f, .06f, .1f, 0.f}}};
-	VkClearValue clearValues[3] { colorClearValue, depthClearValue, albedoClearValue };
-	renderPassBeginInfo.clearValueCount = 3;
+	VkClearValue normalClearValue = {{{0, 0, 0, 0}}};
+	VkClearValue clearValues[4] {
+		colorClearValue,
+		depthClearValue,
+		albedoClearValue,
+		normalClearValue,
+	};
+	renderPassBeginInfo.clearValueCount = 4;
 	renderPassBeginInfo.pClearValues = clearValues;
 
 	VkViewport viewport;
@@ -218,7 +224,23 @@ auto createRenderPass(VkDevice device)
 	albedoAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	albedoAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	VkAttachmentDescription attachmentDescriptions[3] { colorAttachmentDescription, depthAttachmentDescription, albedoAttachmentDescription };
+	VkAttachmentDescription normalAttachmentDescription;
+	normalAttachmentDescription.flags = 0;
+	normalAttachmentDescription.format = VK_FORMAT_R8G8B8A8_SNORM;
+	normalAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	normalAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	normalAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	normalAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	normalAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	normalAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	normalAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentDescription attachmentDescriptions[4] {
+		colorAttachmentDescription,
+		depthAttachmentDescription,
+		albedoAttachmentDescription,
+		normalAttachmentDescription,
+	};
 
 	VkAttachmentReference colorAttachmentReference;
 	colorAttachmentReference.attachment = 0;
@@ -240,27 +262,41 @@ auto createRenderPass(VkDevice device)
 	albedoAttachmentReferenceInput.attachment = 2;
 	albedoAttachmentReferenceInput.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+	VkAttachmentReference normalAttachmentReferenceOutput;
+	normalAttachmentReferenceOutput.attachment = 3;
+	normalAttachmentReferenceOutput.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentReference normalAttachmentReferenceInput;
+	normalAttachmentReferenceInput.attachment = 3;
+	normalAttachmentReferenceInput.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	VkAttachmentReference colorAttachments[2] {
+		albedoAttachmentReferenceOutput,
+		normalAttachmentReferenceOutput,
+	};
+
 	VkSubpassDescription geometrySubpassDescription;
 	geometrySubpassDescription.flags = 0;
 	geometrySubpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	geometrySubpassDescription.inputAttachmentCount = 0;
 	geometrySubpassDescription.pInputAttachments = nullptr;
-	geometrySubpassDescription.colorAttachmentCount = 1;
-	geometrySubpassDescription.pColorAttachments = &albedoAttachmentReferenceOutput;
+	geometrySubpassDescription.colorAttachmentCount = 2;
+	geometrySubpassDescription.pColorAttachments = colorAttachments;
 	geometrySubpassDescription.pResolveAttachments = nullptr;
 	geometrySubpassDescription.pDepthStencilAttachment = &depthAttachmentReferenceOutput;
 	geometrySubpassDescription.preserveAttachmentCount = 0;
 	geometrySubpassDescription.pPreserveAttachments = nullptr;
 
-	VkAttachmentReference inputAttachments[2] {
+	VkAttachmentReference inputAttachments[3] {
 		albedoAttachmentReferenceInput,
 		depthAttachmentReferenceInput,
+		normalAttachmentReferenceInput,
 	};
 
 	VkSubpassDescription shadingSubpassDescription;
 	shadingSubpassDescription.flags = 0;
 	shadingSubpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	shadingSubpassDescription.inputAttachmentCount = 2;
+	shadingSubpassDescription.inputAttachmentCount = 3;
 	shadingSubpassDescription.pInputAttachments = inputAttachments;
 	shadingSubpassDescription.colorAttachmentCount = 1;
 	shadingSubpassDescription.pColorAttachments = &colorAttachmentReference;
@@ -304,7 +340,7 @@ auto createRenderPass(VkDevice device)
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.pNext = nullptr;
 	renderPassInfo.flags = 0;
-	renderPassInfo.attachmentCount = 3;
+	renderPassInfo.attachmentCount = 4;
 	renderPassInfo.pAttachments = attachmentDescriptions;
 	renderPassInfo.subpassCount = 2;
 	renderPassInfo.pSubpasses = subpassDescriptions;
@@ -344,7 +380,21 @@ auto createAlbedoImages(VkDevice device, VkPhysicalDevice physicalDevice, VkComm
 	return std::make_tuple(memories, images, imageViews);
 }
 
-auto createFrameBuffers(VkDevice device, const std::vector<VkImageView>& swapchainImageViews, const std::vector<VkImageView>& depthImageViews, const std::vector<VkImageView>& albedoImageViews, VkRenderPass renderPass)
+auto createNormalImages(VkDevice device, VkPhysicalDevice physicalDevice, VkCommandPool commandPool, VkQueue queue, const std::vector<VkImageView>& swapchainImages) {
+	auto memories = std::vector<VkDeviceMemory>();
+	auto images = std::vector<VkImage>();
+	auto imageViews = std::vector<VkImageView>();
+	for (auto i = 0u; i < swapchainImages.size(); ++i) {
+		auto [memory, image] = createNormalImage(device, physicalDevice, windowSize);
+		auto imageView = createNormalImageView(device, image);
+		memories.push_back(memory);
+		images.push_back(image);
+		imageViews.push_back(imageView);
+	}
+	return std::make_tuple(memories, images, imageViews);
+}
+
+auto createFrameBuffers(VkDevice device, const std::vector<VkImageView>& swapchainImageViews, const std::vector<VkImageView>& depthImageViews, const std::vector<VkImageView>& albedoImageViews, const std::vector<VkImageView>& normalImageViews, VkRenderPass renderPass)
 {
 	auto framebuffers = std::vector<VkFramebuffer>(swapchainImageViews.size());
 	for (std::size_t i = 0; i < swapchainImageViews.size(); ++i) {
@@ -354,8 +404,13 @@ auto createFrameBuffers(VkDevice device, const std::vector<VkImageView>& swapcha
 		framebufferInfo.flags = 0;
 		framebufferInfo.renderPass = renderPass;
 
-		VkImageView views[3] = { swapchainImageViews[i], depthImageViews[i], albedoImageViews[i] };
-		framebufferInfo.attachmentCount = 3;
+		VkImageView views[4] = {
+			swapchainImageViews[i],
+			depthImageViews[i],
+			albedoImageViews[i],
+			normalImageViews[i],
+		};
+		framebufferInfo.attachmentCount = 4;
 		framebufferInfo.pAttachments = views;
 		framebufferInfo.width = windowSize.x;
 		framebufferInfo.height = windowSize.y;
@@ -376,7 +431,8 @@ auto run()
 	auto renderPass = createRenderPass(instance.device);
 	auto [depthMemories, depthImages, depthImageViews] = createDepthImages(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, instance.imageViews);
 	auto [albedoMemories, albedoImages, albedoImageViews] = createAlbedoImages(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, instance.imageViews);
-	auto frameBuffers = createFrameBuffers(instance.device, instance.imageViews, depthImageViews, albedoImageViews, renderPass);
+	auto [normalMemories, normalImages, normalImageViews] = createNormalImages(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, instance.imageViews);
+	auto frameBuffers = createFrameBuffers(instance.device, instance.imageViews, depthImageViews, albedoImageViews, normalImageViews, renderPass);
 
 	auto geometryShaderVert = createShader(instance.device, "res/deferred_geometry.vert.spv");
 	auto geometryShaderFrag = createShader(instance.device, "res/deferred_geometry.frag.spv");
@@ -437,8 +493,11 @@ auto run()
 		lightingUboUniform.update(lightingUbo);
 
 		auto imageIndex = acquireNextImage(instance.device, instance.swapchain, semaphoreImageAvailable);
-		GraphicsPipeline::updateDescriptor(instance.device, lightingPipeline.descriptorSet, lightingUniforms, albedoImageViews[imageIndex], depthImageViews[imageIndex]);
+
+		GraphicsPipeline::updateDescriptor(instance.device, lightingPipeline.descriptorSet, lightingUniforms, albedoImageViews[imageIndex], depthImageViews[imageIndex], normalImageViews[imageIndex]);
+
 		fillCommandBuffer(instance.commandBuffer, frameBuffers[imageIndex], renderPass, geometryPipeline, lightingPipeline, {vertexBuffer}, verticesCount);
+
 		render(instance.swapchain, instance.queue, instance.commandBuffer, semaphoreImageAvailable, semaphoreRenderingDone, imageIndex);
 
 		// wait because we have no fence
@@ -475,6 +534,12 @@ auto run()
 	for (const auto& image : albedoImages)
 		vkDestroyImage(instance.device, image, nullptr);
 	for (const auto& memory : albedoMemories)
+		vkFreeMemory(instance.device, memory, nullptr);
+	for (const auto& imageView : normalImageViews)
+		vkDestroyImageView(instance.device, imageView, nullptr);
+	for (const auto& image : normalImages)
+		vkDestroyImage(instance.device, image, nullptr);
+	for (const auto& memory : normalMemories)
 		vkFreeMemory(instance.device, memory, nullptr);
 	for (const auto& framebuffer : frameBuffers)
 		vkDestroyFramebuffer(instance.device, framebuffer, nullptr);

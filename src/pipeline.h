@@ -59,9 +59,17 @@ inline auto createLightingDescriptorSetLayout(VkDevice device, const UniformInfo
 	depthInputAttachmentBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	depthInputAttachmentBinding.pImmutableSamplers = nullptr; // Optional
 
+	VkDescriptorSetLayoutBinding normalInputAttachmentBinding;
+	normalInputAttachmentBinding.binding = 2;
+	normalInputAttachmentBinding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	normalInputAttachmentBinding.descriptorCount = 1;
+	normalInputAttachmentBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	normalInputAttachmentBinding.pImmutableSamplers = nullptr; // Optional
+
 	auto bindings = getUniformBindings(uniformInfos);
 	bindings.push_back(albedoInputAttachmentBinding);
 	bindings.push_back(depthInputAttachmentBinding);
+	bindings.push_back(normalInputAttachmentBinding);
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo;
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -131,6 +139,11 @@ inline auto createLightingDescriptorPool(VkDevice device, const UniformInfos& un
 	depthPoolSize.descriptorCount = 1;
 	depthPoolSize.type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
 	poolSizes.push_back(depthPoolSize);
+
+	VkDescriptorPoolSize normalPoolSize;
+	normalPoolSize.descriptorCount = 1;
+	normalPoolSize.type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	poolSizes.push_back(normalPoolSize);
 
 	VkDescriptorPoolCreateInfo poolInfo;
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -212,7 +225,8 @@ inline auto updateDescriptor(
 		VkDescriptorSet& descriptorSet,
 		const Uniforms& uniforms,
 		VkImageView albedoView,
-		VkImageView depthView)
+		VkImageView depthView,
+		VkImageView normalView)
 {
 	VkDescriptorImageInfo albedoImageInfo;
 	albedoImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -223,6 +237,11 @@ inline auto updateDescriptor(
 	depthImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	depthImageInfo.imageView = depthView;
 	depthImageInfo.sampler = VK_NULL_HANDLE;
+
+	VkDescriptorImageInfo normalImageInfo;
+	normalImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	normalImageInfo.imageView = normalView;
+	normalImageInfo.sampler = VK_NULL_HANDLE;
 
 	auto bufferInfos = std::vector<VkDescriptorBufferInfo>(uniforms.size());
 	auto imageInfos = std::vector<VkDescriptorImageInfo>(uniforms.size());
@@ -270,6 +289,18 @@ inline auto updateDescriptor(
 	depthWrite.pImageInfo = &depthImageInfo;
 	depthWrite.pTexelBufferView = nullptr;
 
+	VkWriteDescriptorSet normalWrite;
+	normalWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	normalWrite.pNext = nullptr;
+	normalWrite.dstSet = descriptorSet;
+	normalWrite.dstBinding = 2;
+	normalWrite.dstArrayElement = 0;
+	normalWrite.descriptorCount = 1;
+	normalWrite.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	normalWrite.pBufferInfo = nullptr;
+	normalWrite.pImageInfo = &normalImageInfo;
+	normalWrite.pTexelBufferView = nullptr;
+
 	auto writes = std::vector<VkWriteDescriptorSet>(uniforms.size());
 	for (std::size_t j = 0; j < uniforms.size(); ++j) {
 		auto& uniform = uniforms[j];
@@ -287,6 +318,7 @@ inline auto updateDescriptor(
 	}
 	writes.push_back(albedoWrite);
 	writes.push_back(depthWrite);
+	writes.push_back(normalWrite);
 
 	vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
 }
