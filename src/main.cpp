@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <array>
 #include <chrono>
 #include <thread>
 #include <algorithm>
@@ -96,14 +97,14 @@ auto fillCommandBuffer(
 	VkClearValue depthClearValue = {{{1.0f, .0f}}};
 	VkClearValue albedoClearValue = {{{.01f, .06f, .1f, 0.f}}};
 	VkClearValue normalClearValue = {{{0, 0, 0, 0}}};
-	VkClearValue clearValues[4] {
+	auto clearValues = std::array {
 		colorClearValue,
 		depthClearValue,
 		albedoClearValue,
 		normalClearValue,
 	};
-	renderPassBeginInfo.clearValueCount = 4;
-	renderPassBeginInfo.pClearValues = clearValues;
+	renderPassBeginInfo.clearValueCount = clearValues.size();
+	renderPassBeginInfo.pClearValues = clearValues.data();
 
 	VkViewport viewport;
 	viewport.x = 0;
@@ -235,7 +236,7 @@ auto createRenderPass(VkDevice device)
 	normalAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	normalAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	VkAttachmentDescription attachmentDescriptions[4] {
+	auto attachmentDescriptions = std::array {
 		colorAttachmentDescription,
 		depthAttachmentDescription,
 		albedoAttachmentDescription,
@@ -270,7 +271,7 @@ auto createRenderPass(VkDevice device)
 	normalAttachmentReferenceInput.attachment = 3;
 	normalAttachmentReferenceInput.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	VkAttachmentReference colorAttachments[2] {
+	auto colorAttachments = std::array {
 		albedoAttachmentReferenceOutput,
 		normalAttachmentReferenceOutput,
 	};
@@ -280,14 +281,14 @@ auto createRenderPass(VkDevice device)
 	geometrySubpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	geometrySubpassDescription.inputAttachmentCount = 0;
 	geometrySubpassDescription.pInputAttachments = nullptr;
-	geometrySubpassDescription.colorAttachmentCount = 2;
-	geometrySubpassDescription.pColorAttachments = colorAttachments;
+	geometrySubpassDescription.colorAttachmentCount = colorAttachments.size();
+	geometrySubpassDescription.pColorAttachments = colorAttachments.data();
 	geometrySubpassDescription.pResolveAttachments = nullptr;
 	geometrySubpassDescription.pDepthStencilAttachment = &depthAttachmentReferenceOutput;
 	geometrySubpassDescription.preserveAttachmentCount = 0;
 	geometrySubpassDescription.pPreserveAttachments = nullptr;
 
-	VkAttachmentReference inputAttachments[3] {
+	auto inputAttachments = std::array {
 		albedoAttachmentReferenceInput,
 		depthAttachmentReferenceInput,
 		normalAttachmentReferenceInput,
@@ -296,8 +297,8 @@ auto createRenderPass(VkDevice device)
 	VkSubpassDescription shadingSubpassDescription;
 	shadingSubpassDescription.flags = 0;
 	shadingSubpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	shadingSubpassDescription.inputAttachmentCount = 3;
-	shadingSubpassDescription.pInputAttachments = inputAttachments;
+	shadingSubpassDescription.inputAttachmentCount = inputAttachments.size();
+	shadingSubpassDescription.pInputAttachments = inputAttachments.data();
 	shadingSubpassDescription.colorAttachmentCount = 1;
 	shadingSubpassDescription.pColorAttachments = &colorAttachmentReference;
 	shadingSubpassDescription.pResolveAttachments = nullptr;
@@ -305,7 +306,7 @@ auto createRenderPass(VkDevice device)
 	shadingSubpassDescription.preserveAttachmentCount = 0;
 	shadingSubpassDescription.pPreserveAttachments = nullptr;
 
-	VkSubpassDescription subpassDescriptions[2] {
+	auto subpassDescriptions = std::array {
 		geometrySubpassDescription,
 		shadingSubpassDescription,
 	};
@@ -340,10 +341,10 @@ auto createRenderPass(VkDevice device)
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.pNext = nullptr;
 	renderPassInfo.flags = 0;
-	renderPassInfo.attachmentCount = 4;
-	renderPassInfo.pAttachments = attachmentDescriptions;
-	renderPassInfo.subpassCount = 2;
-	renderPassInfo.pSubpasses = subpassDescriptions;
+	renderPassInfo.attachmentCount = attachmentDescriptions.size();
+	renderPassInfo.pAttachments = attachmentDescriptions.data();
+	renderPassInfo.subpassCount = subpassDescriptions.size();
+	renderPassInfo.pSubpasses = subpassDescriptions.data();
 	renderPassInfo.dependencyCount = 3;
 	renderPassInfo.pDependencies = subpassDependencies;
 
@@ -352,49 +353,7 @@ auto createRenderPass(VkDevice device)
 	return renderPass;
 }
 
-auto createDepthImages(VkDevice device, VkPhysicalDevice physicalDevice, VkCommandPool commandPool, VkQueue queue, const std::vector<VkImageView>& swapchainImages) {
-	auto memories = std::vector<VkDeviceMemory>();
-	auto images = std::vector<VkImage>();
-	auto imageViews = std::vector<VkImageView>();
-	for (auto i = 0u; i < swapchainImages.size(); ++i) {
-		auto [memory, image] = createDepthImage(device, physicalDevice, windowSize);
-		auto imageView = createDepthImageView(device, image);
-		memories.push_back(memory);
-		images.push_back(image);
-		imageViews.push_back(imageView);
-	}
-	return std::make_tuple(memories, images, imageViews);
-}
-
-auto createAlbedoImages(VkDevice device, VkPhysicalDevice physicalDevice, VkCommandPool commandPool, VkQueue queue, const std::vector<VkImageView>& swapchainImages) {
-	auto memories = std::vector<VkDeviceMemory>();
-	auto images = std::vector<VkImage>();
-	auto imageViews = std::vector<VkImageView>();
-	for (auto i = 0u; i < swapchainImages.size(); ++i) {
-		auto [memory, image] = createAlbedoImage(device, physicalDevice, windowSize);
-		auto imageView = createAlbedoImageView(device, image);
-		memories.push_back(memory);
-		images.push_back(image);
-		imageViews.push_back(imageView);
-	}
-	return std::make_tuple(memories, images, imageViews);
-}
-
-auto createNormalImages(VkDevice device, VkPhysicalDevice physicalDevice, VkCommandPool commandPool, VkQueue queue, const std::vector<VkImageView>& swapchainImages) {
-	auto memories = std::vector<VkDeviceMemory>();
-	auto images = std::vector<VkImage>();
-	auto imageViews = std::vector<VkImageView>();
-	for (auto i = 0u; i < swapchainImages.size(); ++i) {
-		auto [memory, image] = createNormalImage(device, physicalDevice, windowSize);
-		auto imageView = createNormalImageView(device, image);
-		memories.push_back(memory);
-		images.push_back(image);
-		imageViews.push_back(imageView);
-	}
-	return std::make_tuple(memories, images, imageViews);
-}
-
-auto createFrameBuffers(VkDevice device, const std::vector<VkImageView>& swapchainImageViews, const std::vector<VkImageView>& depthImageViews, const std::vector<VkImageView>& albedoImageViews, const std::vector<VkImageView>& normalImageViews, VkRenderPass renderPass)
+auto createFrameBuffers(VkDevice device, const std::vector<VkImageView>& swapchainImageViews, VkImageView& depthImageViews, VkImageView& albedoImageViews, VkImageView& normalImageViews, VkRenderPass renderPass)
 {
 	auto framebuffers = std::vector<VkFramebuffer>(swapchainImageViews.size());
 	for (std::size_t i = 0; i < swapchainImageViews.size(); ++i) {
@@ -406,9 +365,9 @@ auto createFrameBuffers(VkDevice device, const std::vector<VkImageView>& swapcha
 
 		VkImageView views[4] = {
 			swapchainImageViews[i],
-			depthImageViews[i],
-			albedoImageViews[i],
-			normalImageViews[i],
+			depthImageViews,
+			albedoImageViews,
+			normalImageViews,
 		};
 		framebufferInfo.attachmentCount = 4;
 		framebufferInfo.pAttachments = views;
@@ -428,11 +387,19 @@ auto run()
 	auto sleepTime = 0ms;
 
 	auto instance = Instance();
+
 	auto renderPass = createRenderPass(instance.device);
-	auto [depthMemories, depthImages, depthImageViews] = createDepthImages(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, instance.imageViews);
-	auto [albedoMemories, albedoImages, albedoImageViews] = createAlbedoImages(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, instance.imageViews);
-	auto [normalMemories, normalImages, normalImageViews] = createNormalImages(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, instance.imageViews);
-	auto frameBuffers = createFrameBuffers(instance.device, instance.imageViews, depthImageViews, albedoImageViews, normalImageViews, renderPass);
+
+	auto [depthMemory, depthImage] = createDepthImage(instance.device, instance.physicalDevice, windowSize);
+	auto depthImageView = createDepthImageView(instance.device, depthImage);
+
+	auto [albedoMemory, albedoImage] = createAlbedoImage(instance.device, instance.physicalDevice, windowSize);
+	auto albedoImageView = createAlbedoImageView(instance.device, albedoImage);
+
+	auto [normalMemory, normalImage] = createNormalImage(instance.device, instance.physicalDevice, windowSize);
+	auto normalImageView = createNormalImageView(instance.device, normalImage);
+
+	auto frameBuffers = createFrameBuffers(instance.device, instance.imageViews, depthImageView, albedoImageView, normalImageView, renderPass);
 
 	auto geometryShaderVert = createShader(instance.device, "res/deferred_geometry.vert.spv");
 	auto geometryShaderFrag = createShader(instance.device, "res/deferred_geometry.frag.spv");
@@ -442,6 +409,7 @@ auto run()
 
 	auto geometryUniforms = DeferredGeometryPipeline::createUniforms(instance);
 	auto& geometryUboUniform = std::get<UniformBuffer>(geometryUniforms[0].buffer);
+
 	GraphicsPipeline::updateDescriptor(instance.device, geometryPipeline.descriptorSet, geometryUniforms);
 
 	auto lightingShaderVert = createShader(instance.device, "res/deferred_lighting.vert.spv");
@@ -452,6 +420,8 @@ auto run()
 
 	auto lightingUniforms = DeferredLightingPipeline::createUniforms(instance);
 	auto& lightingUboUniform = std::get<UniformBuffer>(lightingUniforms[0].buffer);
+
+	GraphicsPipeline::updateDescriptor(instance.device, lightingPipeline.descriptorSet, lightingUniforms, albedoImageView, depthImageView, normalImageView);
 
 	// auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(device, physicalDevice, commandPool, queue);
 	auto [semaphoreImageAvailable, semaphoreRenderingDone] = createSemaphores(instance.device);
@@ -500,7 +470,6 @@ auto run()
 
 		auto imageIndex = acquireNextImage(instance.device, instance.swapchain, semaphoreImageAvailable);
 
-		GraphicsPipeline::updateDescriptor(instance.device, lightingPipeline.descriptorSet, lightingUniforms, albedoImageViews[imageIndex], depthImageViews[imageIndex], normalImageViews[imageIndex]);
 
 		fillCommandBuffer(instance.commandBuffer, frameBuffers[imageIndex], renderPass, geometryPipeline, lightingPipeline, {vertexBuffer}, verticesCount);
 
@@ -529,24 +498,15 @@ auto run()
 	vkDestroySemaphore(instance.device, semaphoreRenderingDone, nullptr);
 	vkDestroySemaphore(instance.device, semaphoreImageAvailable, nullptr);
 
-	for (const auto& imageView : depthImageViews)
-		vkDestroyImageView(instance.device, imageView, nullptr);
-	for (const auto& image : depthImages)
-		vkDestroyImage(instance.device, image, nullptr);
-	for (const auto& memory : depthMemories)
-		vkFreeMemory(instance.device, memory, nullptr);
-	for (const auto& imageView : albedoImageViews)
-		vkDestroyImageView(instance.device, imageView, nullptr);
-	for (const auto& image : albedoImages)
-		vkDestroyImage(instance.device, image, nullptr);
-	for (const auto& memory : albedoMemories)
-		vkFreeMemory(instance.device, memory, nullptr);
-	for (const auto& imageView : normalImageViews)
-		vkDestroyImageView(instance.device, imageView, nullptr);
-	for (const auto& image : normalImages)
-		vkDestroyImage(instance.device, image, nullptr);
-	for (const auto& memory : normalMemories)
-		vkFreeMemory(instance.device, memory, nullptr);
+	vkDestroyImageView(instance.device, depthImageView, nullptr);
+	vkDestroyImage(instance.device, depthImage, nullptr);
+	vkFreeMemory(instance.device, depthMemory, nullptr);
+	vkDestroyImageView(instance.device, albedoImageView, nullptr);
+	vkDestroyImage(instance.device, albedoImage, nullptr);
+	vkFreeMemory(instance.device, albedoMemory, nullptr);
+	vkDestroyImageView(instance.device, normalImageView, nullptr);
+	vkDestroyImage(instance.device, normalImage, nullptr);
+	vkFreeMemory(instance.device, normalMemory, nullptr);
 	for (const auto& framebuffer : frameBuffers)
 		vkDestroyFramebuffer(instance.device, framebuffer, nullptr);
 	vkDestroyRenderPass(instance.device, renderPass, nullptr);
