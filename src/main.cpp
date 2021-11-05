@@ -444,16 +444,11 @@ auto run()
 	while (!glfwWindowShouldClose(instance.window)) {
 		auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(cloc::now() - startTime) - sleepTime;
 
-		auto p = glm::perspective(glm::radians(60.f), static_cast<float>(windowSize.x) / windowSize.y, .1f, 10.f);
-		// auto v = glm::lookAt(glm::vec3(glm::sin(glfwGetTime()), 1., 2.5), glm::vec3(0), glm::vec3(0, 1, 0));
-		// auto v = glm::lookAt(glm::vec3(0, 0, 2. + glm::sin(glfwGetTime())), glm::vec3(0), glm::vec3(0, 1, 0));
-		auto v = glm::lookAt(glm::vec3(glm::sin(glfwGetTime()), 0, 3), glm::vec3(0.001, 0, 0), glm::vec3(0, 1, 0));
+		auto p = glm::perspective(glm::radians(60.f), static_cast<float>(windowSize.x) / windowSize.y, .1f, 100.f);
+		auto v = glm::lookAt(glm::vec3(0, 0, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 		auto m = glm::mat4(1.f);
 		m = glm::rotate(m, static_cast<float>(glfwGetTime()), glm::vec3(0, 1, 0));
-		m = glm::translate(m, glm::vec3(0, glm::sin(glfwGetTime() * .71), 0));
-		// m = glm::translate(m, glm::vec3(0, 0, glm::sin(glfwGetTime() * 1.732)));
-		// 	* glm::scale(glm::mat4(1.f), glm::vec3(.8, .8, 1))
-		// 	* glm::rotate(glm::mat4(1.f), .1f * glm::sin(elapsedTime.count() / 1000.f), glm::vec3(0, 0, 1));
+		// m = glm::translate(m, glm::vec3(0, glm::sin(glfwGetTime() * .71), 0));
 		auto mvp = p * v * m;
 
 		DeferredGeometryPipeline::Ubo geometryUbo {

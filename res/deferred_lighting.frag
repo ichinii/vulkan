@@ -27,5 +27,10 @@ void main()
 	vec4 pos = vec4(screen_coord, depth, w);
 	pos.xyz *= pos.w;
 	pos = ubo.p * pos;
-	fragColor = vec4(normal, 1);
+
+	vec3 light_dir = normalize(vec3(0, 0, 1));
+	float cosa = dot(light_dir, normal);
+	vec3 color = albedo.rgb * cosa;
+
+	fragColor = vec4(color, 1);
 }
