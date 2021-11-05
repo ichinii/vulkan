@@ -26,9 +26,10 @@ void PolygonRenderer::drawTriangle(
 	glm::vec3 p1, glm::vec3 c1, glm::vec2 t1,
 	glm::vec3 p2, glm::vec3 c2, glm::vec2 t2)
 {
-	m_vertices.emplace_back(p0, c0, t0);
-	m_vertices.emplace_back(p1, c1, t1);
-	m_vertices.emplace_back(p2, c2, t2);
+	auto n = glm::normalize(glm::cross(p1 - p0, p2 - p0));
+	m_vertices.emplace_back(p0, c0, t0, n);
+	m_vertices.emplace_back(p1, c1, t1, n);
+	m_vertices.emplace_back(p2, c2, t2, n);
 }
 
 void PolygonRenderer::drawCircle(glm::vec3 p, float r, glm::vec3 c)
@@ -42,8 +43,9 @@ void PolygonRenderer::drawCircle(glm::vec3 p, float r, glm::vec3 c)
 		auto dir2 = glm::vec2(glm::cos(a2), glm::sin(a2));
 		auto pos = glm::vec3(r * dir, 0);
 		auto pos2 = glm::vec3(r * dir2, 0);
-		m_vertices.push_back(DeferredGeometryPipeline::Vertex{p, c * .5f, {.5, .5}});
-		m_vertices.push_back(DeferredGeometryPipeline::Vertex{p + pos, c, dir * .5f + .5f});
-		m_vertices.push_back(DeferredGeometryPipeline::Vertex{p + pos2, c, dir2 * .5f + .5f});
+		auto n = glm::normalize(glm::cross(pos, pos2));
+		m_vertices.push_back(DeferredGeometryPipeline::Vertex{p, c * .5f, {.5, .5}, n});
+		m_vertices.push_back(DeferredGeometryPipeline::Vertex{p + pos, c, dir * .5f + .5f, n});
+		m_vertices.push_back(DeferredGeometryPipeline::Vertex{p + pos2, c, dir2 * .5f + .5f, n});
 	}
 }

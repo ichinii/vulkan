@@ -4,6 +4,7 @@
 layout(location = 0) in float w;
 layout(location = 1) in vec3 color;
 layout(location = 2) in vec2 uv;
+layout(location = 3) in vec3 normal;
 
 layout(binding = 1) uniform sampler2D tex;
 layout(binding = 2) uniform sampler2D tex2;
@@ -15,5 +16,5 @@ void main()
 {
 	/* fragColor = color * (vec4(texture(tex, uv).rgb, 1) + vec4(texture(tex2, uv).rgb, 1)); */
 	fragAlbedo = vec4(color, w);
-	fragNormal = vec4(0, 0, 1, 0);
+	fragNormal = vec4(normalize(normal), 0);
 }

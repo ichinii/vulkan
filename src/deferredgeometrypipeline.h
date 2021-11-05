@@ -10,17 +10,20 @@ using namespace GraphicsPipeline;
 
 struct Ubo {
 	glm::mat4 mvp = glm::mat4(1.f);
+	glm::mat4 m = glm::mat4(1.f);
 };
 
 struct Vertex {
 	glm::vec3 pos;
 	glm::vec3 color;
 	glm::vec2 uv;
+	glm::vec3 normal;
 
 	enum Location {
 		Position,
 		Color,
 		Uv,
+		Normal,
 		LocationCount
 	};
 };
@@ -40,6 +43,7 @@ inline auto getAttributeInfos() {
 		AttributeInfo {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)},
 		AttributeInfo {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)},
 		AttributeInfo {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)},
+		AttributeInfo {3, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)},
 	};
 }
 
