@@ -14,8 +14,9 @@ layout(location = 1) out vec4 fragNormal;
 
 void main()
 {
-	vec3 albedo = texture(tex, uv).rgb + texture(tex2, uv).rgb;
-	albedo *= color;
+	/* vec3 albedo = texture(tex, uv).rgb + texture(tex2, uv).rgb; */
+	/* albedo *= color; */
+	vec3 albedo = vec3(1, 1, 1);
 	fragAlbedo = vec4(albedo, 1);
 	fragNormal = vec4(normalize(normal), 0);
 }

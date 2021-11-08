@@ -421,19 +421,21 @@ auto run()
 	auto lightingUniforms = DeferredLightingPipeline::createUniforms(instance);
 	auto& lightingUboUniform = std::get<UniformBuffer>(lightingUniforms[0].buffer);
 
-	GraphicsPipeline::updateDescriptor(instance.device, lightingPipeline.descriptorSet, lightingUniforms, albedoImageView, depthImageView, normalImageView);
 
 	// auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(device, physicalDevice, commandPool, queue);
 	auto [semaphoreImageAvailable, semaphoreRenderingDone] = createSemaphores(instance.device);
 
 	auto renderer = PolygonRenderer();
-	auto z = 0.25f;
-	renderer.drawCircle(glm::vec3(0, 0, 0), 1.f, glm::vec3(0.5));
-	renderer.drawCircle(glm::vec3(0, 0, .5), .5f, glm::vec3(0.5));
-	renderer.drawTriangle(
-		glm::vec3(-1, -1, z), glm::vec3(.3), glm::vec2(0, 0),
-		glm::vec3(1, -1, z), glm::vec3(.3), glm::vec2(1, 0),
-		glm::vec3(1, 1, z), glm::vec3(.3), glm::vec2(1, 1));
+
+	renderer.drawSphere(glm::vec3(-1, 0, 0), 1.f, glm::vec3(1), false);
+	renderer.drawSphere(glm::vec3(1, 0, 0), 1.f, glm::vec3(1), true);
+	// renderer.drawCircle(glm::vec3(0, 0, 0), 1.f, glm::vec3(0.5));
+	// renderer.drawCircle(glm::vec3(0, 0, .5), .5f, glm::vec3(0.5));
+	// renderer.drawTriangle(
+	// 	glm::vec3(-1, -1, z), glm::vec3(.3), glm::vec2(0, 0),
+	// 	glm::vec3(1, -1, z), glm::vec3(.3), glm::vec2(1, 0),
+	// 	glm::vec3(1, 1, z), glm::vec3(.3), glm::vec2(1, 1));
+
 	auto vertices = renderer.flush();
 	assert(vertices.size() > 0);
 	auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(instance.device, instance.physicalDevice, instance.commandPool, instance.queue, vertices);
@@ -444,10 +446,11 @@ auto run()
 	while (!glfwWindowShouldClose(instance.window)) {
 		auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(cloc::now() - startTime) - sleepTime;
 
+		auto cameraPos = glm::vec3(0, glm::sin(glfwGetTime() * .3), 5);
 		auto p = glm::perspective(glm::radians(60.f), static_cast<float>(windowSize.x) / windowSize.y, .1f, 100.f);
-		auto v = glm::lookAt(glm::vec3(0, 0, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+		auto v = glm::lookAt(cameraPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 		auto m = glm::mat4(1.f);
-		m = glm::rotate(m, static_cast<float>(glfwGetTime()), glm::vec3(0, 1, 0));
+		m = glm::rotate(m, static_cast<float>(glfwGetTime() * .1f), glm::vec3(0, 1, 0));
 		// m = glm::translate(m, glm::vec3(0, glm::sin(glfwGetTime() * .71), 0));
 		auto mvp = p * v * m;
 
@@ -460,11 +463,15 @@ auto run()
 		DeferredLightingPipeline::Ubo lightingUbo {
 			glm::inverse(p * v),
 			windowSize,
+			{},
+			cameraPos,
 		};
 		lightingUboUniform.update(lightingUbo);
 
 		auto imageIndex = acquireNextImage(instance.device, instance.swapchain, semaphoreImageAvailable);
 
+		// do a descriptor write because the swapchain image changes
+		GraphicsPipeline::updateDescriptor(instance.device, lightingPipeline.descriptorSet, lightingUniforms, albedoImageView, depthImageView, normalImageView);
 
 		fillCommandBuffer(instance.commandBuffer, frameBuffers[imageIndex], renderPass, geometryPipeline, lightingPipeline, {vertexBuffer}, verticesCount);
 

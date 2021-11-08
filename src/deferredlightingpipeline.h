@@ -9,8 +9,10 @@ namespace DeferredLightingPipeline {
 using namespace GraphicsPipeline;
 
 struct Ubo {
-	glm::mat4 p = glm::mat4(1.f);
-	glm::vec2 windowSize;
+	glm::mat4 inverse_pv = glm::mat4(1.f);
+	glm::vec2 windowSize = ::windowSize;
+	glm::vec2 unused;
+	glm::vec3 cameraPos;
 };
 
 inline auto getUniformInfos() {

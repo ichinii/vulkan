@@ -49,3 +49,70 @@ void PolygonRenderer::drawCircle(glm::vec3 p, float r, glm::vec3 c)
 		m_vertices.push_back(DeferredGeometryPipeline::Vertex{p + pos2, c, dir2 * .5f + .5f, n});
 	}
 }
+
+void PolygonRenderer::drawSphere(glm::vec3 p, float r, glm::vec3 c, bool smooth)
+{
+	const auto horizontal_divisions = 128;
+	const auto vertical_divisions = 32;
+
+	auto nextHorizontalIndex = [=] (glm::ivec2 i) {
+		return glm::ivec2((i.x + 1) % horizontal_divisions, i.y);
+	};
+
+	auto nextVerticalIndex = [=] (glm::ivec2 i) {
+		return glm::ivec2(i.x, i.y + 1);
+	};
+
+	auto normalizedIndex = [=] (glm::ivec2 i) {
+		return glm::vec2(i.x, i.y) / glm::vec2(horizontal_divisions, vertical_divisions);
+	};
+
+	auto getNormals = [=] (glm::vec3 pos, glm::vec3 pos_x, glm::vec3 pos_y, glm::vec3 pos_xy) {
+		if (smooth) {
+			pos = glm::normalize(pos);
+			pos_x = glm::normalize(pos_x);
+			pos_y = glm::normalize(pos_y);
+			pos_xy = glm::normalize(pos_xy);
+			return std::make_tuple(pos, pos_x, pos_y, pos_xy);
+		}
+		else {
+			auto n = glm::normalize(glm::cross(pos_x - pos, pos_y - pos));
+			return std::make_tuple(n, n, n, n);
+		}
+	};
+
+	auto getPosition = [=] (glm::ivec2 i) {
+		auto normalized = normalizedIndex(i);
+		auto radians = normalized * glm::pi<float>() * glm::vec2(2, 1);
+		auto x = glm::sin(radians.y) * glm::cos(radians.x);
+		auto z = glm::sin(radians.y) * glm::sin(radians.x);
+		auto y = glm::cos(radians.y);
+		return glm::vec3(x, y, z) * r;
+	};
+
+	for (int y = 0; y < vertical_divisions; ++y) {
+		for (int x = 0; x < horizontal_divisions; ++x) {
+			auto index = glm::ivec2(x, y);
+			auto index_x = nextHorizontalIndex(index);
+			auto index_y = nextVerticalIndex(index);
+			auto index_xy = nextVerticalIndex(index_x);
+			auto pos = getPosition(index);
+			auto pos_x = getPosition(index_x);
+			auto pos_y = getPosition(index_y);
+			auto pos_xy = getPosition(index_xy);
+			auto uv = normalizedIndex(index);
+			auto uv_x = normalizedIndex(index_x);
+			auto uv_y = normalizedIndex(index_y);
+			auto uv_xy = normalizedIndex(index_xy);
+			auto [normal, normal_x, normal_y, normal_xy] = getNormals(pos, pos_x, pos_y, pos_xy);
+
+			m_vertices.emplace_back(p + pos, c, uv, normal);
+			m_vertices.emplace_back(p + pos_x, c, uv_x, normal_x);
+			m_vertices.emplace_back(p + pos_xy, c, uv_xy, normal_xy);
+
+			m_vertices.emplace_back(p + pos, c, uv, normal);
+			m_vertices.emplace_back(p + pos_xy, c, uv_xy, normal_xy);
+			m_vertices.emplace_back(p + pos_y, c, uv_y, normal_y);
+		}
+	}
+}

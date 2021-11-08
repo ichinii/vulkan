@@ -6,13 +6,17 @@ layout (input_attachment_index = 1, set = 0, binding = 1) uniform subpassInput i
 layout (input_attachment_index = 2, set = 0, binding = 2) uniform subpassInput input_normal;
 
 layout(binding = 3) uniform UBO {
-	mat4 p;
+	mat4 inverse_pv;
 	vec2 windowSize;
+	vec3 cameraPos;
 } ubo;
 
 layout(location = 0) in vec2 uv;
 
 layout(location = 0) out vec4 fragColor;
+
+#define light_color vec3(1, 1, 1)
+#define light_dir normalize(vec3(1, 1, 1))
 
 void main()
 {
@@ -26,11 +30,17 @@ void main()
 	screen_coord.y = -screen_coord.y;
 	vec4 pos = vec4(screen_coord, depth, w);
 	pos.xyz *= pos.w;
-	pos = ubo.p * pos;
+	pos = ubo.inverse_pv * pos;
 
-	vec3 light_dir = normalize(vec3(0, 0, 1));
-	float cosa = dot(light_dir, normal);
-	vec3 color = albedo.rgb * cosa;
+	float cosa = max(0., dot(light_dir, normal));
+	vec3 diffuse = albedo.rgb * cosa;
 
+	vec3 reflected = reflect(light_dir, normal);
+	vec3 cameraDir = normalize(ubo.cameraPos - pos.xyz);
+	float cosb = max(0., dot(-reflected, cameraDir));
+	cosb = pow(cosb, 10.) * .3f;
+	vec3 spec = light_color * cosb;
+
+	vec3 color = diffuse + spec;
 	fragColor = vec4(color, 1);
 }
