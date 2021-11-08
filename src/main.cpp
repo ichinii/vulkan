@@ -421,20 +421,12 @@ auto run()
 	auto lightingUniforms = DeferredLightingPipeline::createUniforms(instance);
 	auto& lightingUboUniform = std::get<UniformBuffer>(lightingUniforms[0].buffer);
 
-
-	// auto [vertexBufferMemory, vertexBuffer, verticesCount] = createVertexBuffer(device, physicalDevice, commandPool, queue);
 	auto [semaphoreImageAvailable, semaphoreRenderingDone] = createSemaphores(instance.device);
 
 	auto renderer = PolygonRenderer();
 
-	renderer.drawSphere(glm::vec3(0, 0, 0), 1.f, glm::vec3(1), true);
-	// renderer.drawSphere(glm::vec3(1, 0, 0), 1.f, glm::vec3(1), true);
-	// renderer.drawCircle(glm::vec3(0, 0, 0), 1.f, glm::vec3(0.5));
-	// renderer.drawCircle(glm::vec3(0, 0, .5), .5f, glm::vec3(0.5));
-	// renderer.drawTriangle(
-	// 	glm::vec3(-1, -1, z), glm::vec3(.3), glm::vec2(0, 0),
-	// 	glm::vec3(1, -1, z), glm::vec3(.3), glm::vec2(1, 0),
-	// 	glm::vec3(1, 1, z), glm::vec3(.3), glm::vec2(1, 1));
+	renderer.drawSphere(glm::vec3(-1, 0, 0), 1.f, glm::vec3(1), false);
+	renderer.drawSphere(glm::vec3(1, 0, 0), 1.f, glm::vec3(1), true);
 
 	auto vertices = renderer.flush();
 	assert(vertices.size() > 0);
@@ -446,11 +438,11 @@ auto run()
 	while (!glfwWindowShouldClose(instance.window)) {
 		auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(cloc::now() - startTime) - sleepTime;
 
-		auto cameraPos = glm::vec3(0, 0, 5);
-		auto p = glm::perspective(glm::radians(60.f), static_cast<float>(windowSize.x) / windowSize.y, .1f, 100.f);
+		auto cameraPos = glm::vec3(0, glm::sin(glfwGetTime() * .1f), 3);
+		auto p = glm::perspective(glm::radians(66.f), static_cast<float>(windowSize.x) / windowSize.y, .01f, 100.f);
 		auto v = glm::lookAt(cameraPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 		auto m = glm::mat4(1.f);
-		m = glm::rotate(m, static_cast<float>(glfwGetTime() * .01f), glm::vec3(0, 1, 0));
+		m = glm::rotate(m, static_cast<float>(glfwGetTime() * .2f), glm::vec3(0, 1, 0));
 		// m = glm::translate(m, glm::vec3(0, glm::sin(glfwGetTime() * .71), 0));
 		auto mvp = p * v * m;
 
