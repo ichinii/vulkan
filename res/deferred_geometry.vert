@@ -24,9 +24,9 @@ void main()
 {
 	vec4 pos = ubo.mvp * vec4(vertex_position, 1);
 	pos.y = -pos.y;
+	w = pos.w;
 	gl_Position = pos;
 
-	w = pos.w;
 	color = vertex_color;
 	uv = vertex_uv;
 	normal = (ubo.m * vec4(vertex_normal, 0)).xyz;

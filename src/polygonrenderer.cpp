@@ -50,10 +50,11 @@ void PolygonRenderer::drawCircle(glm::vec3 p, float r, glm::vec3 c)
 	}
 }
 
+#include <iostream>
 void PolygonRenderer::drawSphere(glm::vec3 p, float r, glm::vec3 c, bool smooth)
 {
-	const auto horizontal_divisions = 128;
-	const auto vertical_divisions = 32;
+	const auto vertical_divisions = 64;
+	const auto horizontal_divisions = vertical_divisions * 2;
 
 	auto nextHorizontalIndex = [=] (glm::ivec2 i) {
 		return glm::ivec2((i.x + 1) % horizontal_divisions, i.y);

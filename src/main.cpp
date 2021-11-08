@@ -227,7 +227,7 @@ auto createRenderPass(VkDevice device)
 
 	VkAttachmentDescription normalAttachmentDescription;
 	normalAttachmentDescription.flags = 0;
-	normalAttachmentDescription.format = VK_FORMAT_R8G8B8A8_SNORM;
+	normalAttachmentDescription.format = VK_FORMAT_R32G32B32A32_SFLOAT;
 	normalAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
 	normalAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	normalAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -427,8 +427,8 @@ auto run()
 
 	auto renderer = PolygonRenderer();
 
-	renderer.drawSphere(glm::vec3(-1, 0, 0), 1.f, glm::vec3(1), false);
-	renderer.drawSphere(glm::vec3(1, 0, 0), 1.f, glm::vec3(1), true);
+	renderer.drawSphere(glm::vec3(0, 0, 0), 1.f, glm::vec3(1), true);
+	// renderer.drawSphere(glm::vec3(1, 0, 0), 1.f, glm::vec3(1), true);
 	// renderer.drawCircle(glm::vec3(0, 0, 0), 1.f, glm::vec3(0.5));
 	// renderer.drawCircle(glm::vec3(0, 0, .5), .5f, glm::vec3(0.5));
 	// renderer.drawTriangle(
@@ -446,11 +446,11 @@ auto run()
 	while (!glfwWindowShouldClose(instance.window)) {
 		auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(cloc::now() - startTime) - sleepTime;
 
-		auto cameraPos = glm::vec3(0, glm::sin(glfwGetTime() * .3), 5);
+		auto cameraPos = glm::vec3(0, 0, 5);
 		auto p = glm::perspective(glm::radians(60.f), static_cast<float>(windowSize.x) / windowSize.y, .1f, 100.f);
 		auto v = glm::lookAt(cameraPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 		auto m = glm::mat4(1.f);
-		m = glm::rotate(m, static_cast<float>(glfwGetTime() * .1f), glm::vec3(0, 1, 0));
+		m = glm::rotate(m, static_cast<float>(glfwGetTime() * .01f), glm::vec3(0, 1, 0));
 		// m = glm::translate(m, glm::vec3(0, glm::sin(glfwGetTime() * .71), 0));
 		auto mvp = p * v * m;
 
