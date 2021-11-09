@@ -62,3 +62,25 @@ struct ErrorObject {
 };
 
 #define error ErrorObject {__FILE__, __LINE__}
+
+template <typename T, typename A>
+inline auto& operator << (std::ostream& os, const std::vector<T, A>& v) {
+	auto first = true;
+	os << "{";
+	for (const auto& i : v) {
+		if (!first)
+			os << ", ";
+		os << i;
+	}
+	return os << "}";
+}
+
+template <int D, typename T, glm::qualifier Q>
+inline auto& operator << (std::ostream& os, glm::vec<D, T, Q> v) {
+	os << "(";
+	for (auto i = 0; i < D - 1; ++i)
+		os << v[i] << ", ";
+	if (D > 0)
+		os << v[D - 1];
+	return os << ")";
+}

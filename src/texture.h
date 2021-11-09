@@ -7,9 +7,10 @@
 
 #define texture_format VK_FORMAT_R8G8B8A8_SRGB
 
+using ImageColor = glm::u8vec4;
+
 struct Image {
-	using color = glm::u8vec4;
-	std::vector<color> colors;
+	std::vector<ImageColor> colors;
 	glm::uvec2 size;
 };
 
@@ -313,7 +314,7 @@ inline auto copyBufferToImage(VkDevice device, VkCommandPool commandPool, VkQueu
 }
 
 inline auto createTexture(VkDevice device, VkPhysicalDevice physicalDevice, VkCommandPool commandPool, VkQueue queue, Image image) {
-	auto size = static_cast<VkDeviceSize>(image.size.x * image.size.y * sizeof(Image::color));
+	auto size = static_cast<VkDeviceSize>(image.size.x * image.size.y * sizeof(ImageColor));
 	assert(size > 0);
 
 	auto [stagingMemory, stagingBuffer] = createBuffer(physicalDevice, device, size,
@@ -343,8 +344,8 @@ inline auto createImageSampler(VkDevice device) {
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	samplerInfo.magFilter = VK_FILTER_NEAREST;
 	samplerInfo.minFilter = VK_FILTER_NEAREST;
-	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerInfo.anisotropyEnable = VK_FALSE;
 	samplerInfo.maxAnisotropy = 16.0f;

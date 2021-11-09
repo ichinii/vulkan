@@ -16,10 +16,14 @@ layout(location = 0) in vec2 uv;
 layout(location = 0) out vec4 fragColor;
 
 #define light_color vec3(1, 1, 1)
-#define light_dir normalize(vec3(1, 1, 1))
+#define light_dir normalize(vec3(1, 1, 5))
 
 void main()
 {
+	float covered = subpassLoad(input_albedo).a;
+	if (covered < .5)
+		discard;
+
 	vec3 albedo = subpassLoad(input_albedo).rgb;
 	float depth = subpassLoad(input_depth).r;
 	vec3 normal = subpassLoad(input_normal).rgb;
@@ -40,6 +44,7 @@ void main()
 	cosb = pow(cosb, 7.);
 	vec3 spec = light_color * cosb;
 
-	vec3 color = diffuse * .9 + spec * .3;
+	vec3 ambient = vec3(1);
+	vec3 color = ambient * .1 + diffuse * .8 + spec * .3;
 	fragColor = vec4(color, 1);
 }

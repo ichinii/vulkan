@@ -34,7 +34,6 @@ inline auto getUniformInfos() {
 	return UniformInfos {
 		UniformInfo {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT},
 		UniformInfo {1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT},
-		UniformInfo {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
 	};
 }
 
@@ -112,20 +111,12 @@ inline auto createDeferredGeometryPipelineRaii(VkDevice device, VkShaderModule s
 	};
 }
 
-inline auto createUniforms(const Instance& instance) {
-	auto textures = Textures();
-	textures.emplace_back(Texture::fromGenerator(instance, glm::uvec2(8, 8), [] (glm::vec2 uv) {
-		uv = glm::abs(uv);
-		return glm::vec4(uv.y, 0, uv.x, 1);
-	}));
-	textures.emplace_back(Texture::fromGenerator(instance, glm::uvec2(64, 64), [] (glm::vec2 uv) {
-			return glm::vec4(0, glm::sin(uv.x * 6.f + uv.y * 4.f), 0, 1);
-	}));
+inline auto createUniforms(const Instance& instance, Image albedoImage) {
+	auto albedo = Texture::fromImage(instance, std::move(albedoImage));
 
 	auto uniforms = Uniforms();
 	uniforms.push_back(createUniform(0, VK_SHADER_STAGE_VERTEX_BIT, UniformBuffer::fromStruct<Ubo>(instance)));
-	uniforms.push_back(createUniform(1, VK_SHADER_STAGE_FRAGMENT_BIT, std::move(textures[0])));
-	uniforms.push_back(createUniform(2, VK_SHADER_STAGE_FRAGMENT_BIT, std::move(textures[1])));
+	uniforms.push_back(createUniform(1, VK_SHADER_STAGE_FRAGMENT_BIT, std::move(albedo)));
 
 	return uniforms;
 }

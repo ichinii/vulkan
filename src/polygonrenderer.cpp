@@ -50,7 +50,6 @@ void PolygonRenderer::drawCircle(glm::vec3 p, float r, glm::vec3 c)
 	}
 }
 
-#include <iostream>
 void PolygonRenderer::drawSphere(glm::vec3 p, float r, glm::vec3 c, bool smooth)
 {
 	const auto vertical_divisions = 64;
@@ -116,4 +115,9 @@ void PolygonRenderer::drawSphere(glm::vec3 p, float r, glm::vec3 c, bool smooth)
 			m_vertices.emplace_back(p + pos_y, c, uv_y, normal_y);
 		}
 	}
+}
+
+void PolygonRenderer::drawMesh(const DeferredGeometryPipeline::Vertices& vertices)
+{
+	m_vertices.insert(m_vertices.end(), vertices.begin(), vertices.end());
 }

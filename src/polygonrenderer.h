@@ -19,6 +19,8 @@ public:
 
 	void drawSphere(glm::vec3 p, float r, glm::vec3 c, bool smooth);
 
+	void drawMesh(const DeferredGeometryPipeline::Vertices& vertices);
+
 private:
 	DeferredGeometryPipeline::Vertices m_vertices;
 };

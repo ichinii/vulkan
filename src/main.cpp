@@ -21,6 +21,7 @@
 #include "texture.h"
 #include "polygonrenderer.h"
 #include "shader.h"
+#include "gltf.h"
 
 using namespace std::chrono_literals;
 using cloc = std::chrono::steady_clock;
@@ -66,6 +67,34 @@ auto createVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkComm
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 
 	return std::make_tuple(memory, buffer, vertices.size());
+}
+
+template <typename T>
+auto createIndexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkCommandPool commandPool, VkQueue queue, const std::vector<T>& indices)
+{
+	auto size = sizeof(T) * indices.size();
+	assert(size > 0);
+
+	auto [stagingMemory, stagingBuffer] = createBuffer(physicalDevice, device, size,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+	void* data;
+	vkMapMemory(device, stagingMemory, 0, size, 0, &data);
+	std::memcpy(data, indices.data(), size);
+	vkUnmapMemory(device, stagingMemory);
+	// vkFlushMappedMemoryRanges() // only needed if memory is not coherent
+
+	auto [memory, buffer] = createBuffer(physicalDevice, device, size,
+		VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+	copyBuffer(device, stagingBuffer, buffer, size, commandPool, queue);
+
+	vkFreeMemory(device, stagingMemory, nullptr);
+	vkDestroyBuffer(device, stagingBuffer, nullptr);
+
+	return std::make_tuple(memory, buffer, indices.size());
 }
 
 auto fillCommandBuffer(
@@ -126,6 +155,8 @@ auto fillCommandBuffer(
 	auto offsets = std::vector<VkDeviceSize>(vertexBuffers.size(), 0);
 	vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), offsets.data());
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, geometryPipeline.layout, 0, 1, &geometryPipeline.descriptorSet, 0, nullptr);
+	// vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+	// vkCmdDrawIndexed(commandBuffer, indicesCount, 1, 0, 0, 0);
 	vkCmdDraw(commandBuffer, verticesCount, 1, 0, 0);
 
 	vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
@@ -386,6 +417,8 @@ auto run()
 	auto startTime = cloc::now();
 	auto sleepTime = 0ms;
 
+	auto mesh = *loadMeshFromGltfFile("res/BoxTextured.gltf");
+
 	auto instance = Instance();
 
 	auto renderPass = createRenderPass(instance.device);
@@ -407,7 +440,7 @@ auto run()
 	vkDestroyShaderModule(instance.device, geometryShaderVert, nullptr);
 	vkDestroyShaderModule(instance.device, geometryShaderFrag, nullptr);
 
-	auto geometryUniforms = DeferredGeometryPipeline::createUniforms(instance);
+	auto geometryUniforms = DeferredGeometryPipeline::createUniforms(instance, mesh.albedo);
 	auto& geometryUboUniform = std::get<UniformBuffer>(geometryUniforms[0].buffer);
 
 	GraphicsPipeline::updateDescriptor(instance.device, geometryPipeline.descriptorSet, geometryUniforms);
@@ -425,8 +458,9 @@ auto run()
 
 	auto renderer = PolygonRenderer();
 
-	renderer.drawSphere(glm::vec3(-1, 0, 0), 1.f, glm::vec3(1), false);
-	renderer.drawSphere(glm::vec3(1, 0, 0), 1.f, glm::vec3(1), true);
+	// renderer.drawSphere(glm::vec3(-1, 0, 0), 1.f, glm::vec3(1), false);
+	// renderer.drawSphere(glm::vec3(1, 0, 0), 1.f, glm::vec3(1), true);
+	renderer.drawMesh(mesh.vertices);
 
 	auto vertices = renderer.flush();
 	assert(vertices.size() > 0);
@@ -445,6 +479,12 @@ auto run()
 		m = glm::rotate(m, static_cast<float>(glfwGetTime() * .2f), glm::vec3(0, 1, 0));
 		// m = glm::translate(m, glm::vec3(0, glm::sin(glfwGetTime() * .71), 0));
 		auto mvp = p * v * m;
+
+		// TODO: upload directional and point lights
+		// std::array lights = {
+		// 	glm::vec4(3, 3, 3, 1),
+		// 	glm::vec4(-3, 3, 3, 2),
+		// };
 
 		DeferredGeometryPipeline::Ubo geometryUbo {
 			mvp,

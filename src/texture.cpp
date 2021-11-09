@@ -1,7 +1,7 @@
 #include "texture.h"
 
 Texture Texture::fromGenerator(const Instance& instance, glm::uvec2 size, std::function<Texture::GeneratorF> f) {
-	auto colors = std::vector<Image::color>(size.x * size.y);
+	auto colors = std::vector<ImageColor>(size.x * size.y);
 	std::size_t index = 0;
 	std::generate(colors.begin(), colors.end(), [&] () {
 		auto uv = glm::vec2(index % size.x, index / size.x);
